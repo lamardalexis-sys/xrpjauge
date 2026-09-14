@@ -1,0 +1,26 @@
+{
+  "_comment": "Thèmes suivis par le composant « Géopolitique & news ». gdelt : requête GDELT (phrases entre guillemets, OR entre parenthèses). rss : requête Google News. weight : poids relatif du thème dans le composant. Ajoute/retire librement.",
+  "themes": [
+    { "key": "trump",   "label": "Trump / Maison-Blanche",  "gdelt": "(\"Trump tariffs\" OR \"Trump executive order\" OR \"Trump sanctions\" OR \"Trump crypto\")", "rss": "Trump tariffs OR sanctions OR \"executive order\" OR crypto", "weight": 3 },
+    { "key": "russia",  "label": "Russie / Ukraine / OTAN",  "gdelt": "(\"Putin\" OR \"Russia Ukraine\" OR \"NATO\")", "rss": "Putin OR Kremlin OR Ukraine war OR NATO", "weight": 2 },
+    { "key": "china",   "label": "Chine / Taïwan",           "gdelt": "(\"China Taiwan\" OR \"Xi Jinping\" OR \"China tariffs\")", "rss": "China Taiwan OR \"Xi Jinping\" OR China tariffs", "weight": 2 },
+    { "key": "mideast", "label": "Moyen-Orient / pétrole",   "gdelt": "(\"Iran\" OR \"Israel strike\" OR \"oil prices\" OR \"Strait of Hormuz\")", "rss": "Iran OR Israel strike OR oil prices Hormuz", "weight": 2 },
+    { "key": "fed",     "label": "Fed / macro US",            "gdelt": "(\"Federal Reserve\" OR \"Powell\" OR \"rate hike\" OR \"inflation data\")", "rss": "Federal Reserve Powell rate OR inflation CPI", "weight": 3 },
+    { "key": "crypto",  "label": "Crypto / régulation",       "gdelt": "(\"crypto regulation\" OR \"SEC crypto\" OR \"Ripple\" OR \"XRP\" OR \"bitcoin ETF\" OR \"stablecoin\")", "rss": "crypto regulation OR SEC OR Ripple XRP OR bitcoin ETF OR stablecoin", "weight": 3 },
+    { "key": "ai",      "label": "IA / tech",                 "gdelt": "(\"AI bubble\" OR \"Nvidia\" OR \"OpenAI\" OR \"AI regulation\")", "rss": "AI bubble OR Nvidia earnings OR OpenAI OR AI regulation", "weight": 1 },
+    { "key": "markets", "label": "Marchés / récession",       "gdelt": "(\"stock market\" OR \"recession\" OR \"bank failure\" OR \"credit crisis\")", "rss": "stock market selloff OR recession OR bank failure OR credit", "weight": 2 }
+  ],
+  "risk_lexicon": {
+    "war": 3, "invasion": 3, "strike": 2, "strikes": 2, "attack": 2, "missile": 2, "nuclear": 3, "escalat": 2,
+    "sanction": 2, "tariff": 2, "ban": 2, "crackdown": 2, "lawsuit": 1, "probe": 1, "investigation": 1, "subpoena": 1,
+    "crash": 3, "plunge": 2, "plunges": 2, "selloff": 2, "sell-off": 2, "tumble": 2, "collapse": 3, "default": 2, "bankrupt": 3,
+    "bank failure": 3, "contagion": 3, "liquidat": 2, "hack": 3, "exploit": 2, "breach": 2, "halt": 2, "freeze": 2,
+    "emergency": 2, "shutdown": 2, "recession": 2, "stagflation": 2, "hike": 1, "hawkish": 1, "warning": 1, "warns": 1,
+    "fear": 1, "panic": 3, "crisis": 2, "turmoil": 2, "chaos": 2, "threat": 1, "threatens": 1, "ultimatum": 2,
+    "bubble": 1, "layoffs": 1, "delist": 2, "reject": 1, "rejected": 1, "fails": 1, "failed": 1, "blocked": 1
+  },
+  "calm_lexicon": {
+    "ceasefire": -2, "truce": -2, "deal": -1, "agreement": -1, "approval": -1, "approved": -1, "passes": -1, "passed": -1,
+    "rally": -1, "record high": -1, "cut": -1, "dovish": -1, "pause": -1, "inflow": -1, "inflows": -1, "surge": -1
+  }
+}

@@ -1,4 +1,4 @@
-# Thermomètre de stress XRP (V2)
+# Thermomètre de stress XRP (V3)
 
 Une jauge 0-100 qui monte quand les conditions d'une capitulation du marché se
 mettent en place. Mise à jour toutes les heures par GitHub Actions, affichée sur
@@ -15,13 +15,46 @@ une page GitHub Pages consultable depuis le téléphone. Zéro clé API, zéro c
 
 | Composant | Poids | Sources (gratuites, joignables depuis GitHub) | Ce qui fait monter le score |
 |---|---|---|---|
-| Tendance | 20 | Kraken → CoinGecko → Binance | XRP et BTC sous leurs SMA 50 / 200 j ; XRP qui sous-performe BTC sur 30 j |
-| Momentum & vol. réalisée | 15 | idem | Chute 7 j / 30 j ; hausse parabolique (+15 %/7 j) ; vol 7 j ≫ vol 30 j ; volume anormal sur journée baissière |
-| Levier | 20 | OKX (→ Binance) | Funding ≥ 0,05 %/8 h ou ≤ -0,02 % (dernier + moyenne 7 j) ; OI qui grimpe contre le prix ; ratio long/short extrême ; cascade de liquidations de longs |
+| Tendance | 18 | Kraken → CoinGecko → Binance | XRP et BTC sous leurs SMA 50 / 200 j ; XRP qui sous-performe BTC sur 30 j |
+| Momentum & vol. réalisée | 14 | idem | Chute 7 j / 30 j ; hausse parabolique (+15 %/7 j) ; vol 7 j ≫ vol 30 j ; volume anormal sur journée baissière |
+| Levier | 18 | OKX (→ Binance) | Funding ≥ 0,05 %/8 h ou ≤ -0,02 % (dernier + moyenne 7 j) ; OI qui grimpe contre le prix ; ratio long/short extrême ; cascade de liquidations de longs |
 | Vol. implicite & macro | 10 | Deribit (DVOL BTC), Yahoo → stooq (VIX) | DVOL > 45 et/ou en saut vs moyenne 30 j ; VIX > 15 et/ou en saut |
 | Liquidité | 10 | DefiLlama, CoinGecko, `manual.json` | Stablecoins en contraction sur 7 j ; dominance BTC > 55 % ; sorties nettes des ETF XRP (saisie manuelle) |
-| Sentiment | 10 | alternative.me | Fear & Greed ≤ 20 ; ≥ 80 compte aussi (complaisance) ; chute ≥ 20 pts en 7 j |
-| Événements | 15 | `events.json` (à la main) | Décision binaire (Fed, Sénat…) à moins de 14 jours ; 100 % de l'impact à J-1 |
+| Sentiment | 8 | alternative.me | Fear & Greed ≤ 20 ; ≥ 80 compte aussi (complaisance) ; chute ≥ 20 pts en 7 j |
+| Événements | 12 | `events.json` (à la main) | Décision binaire (Fed, Sénat…) à moins de 14 jours ; 100 % de l'impact à J-1 |
+| Géopolitique & news | 10 | GDELT, Google News RSS, `themes.json`, IA optionnelle | Presse mondiale qui vire au négatif et/ou explose en volume sur un thème ; titres chargés en mots à risque ; note de risque IA |
+
+### Le composant « Géopolitique & news » (V3)
+
+Huit thèmes suivis par défaut (`themes.json`) : Trump / Maison-Blanche, Russie /
+Ukraine / OTAN, Chine / Taïwan, Moyen-Orient / pétrole, Fed / macro US, Crypto /
+régulation, IA / tech, Marchés / récession. Pour chacun :
+
+- **GDELT** (projet universitaire, gratuit, sans clé) mesure la tonalité moyenne
+  et le volume de la presse mondiale sur 24 h, comparés aux 7 derniers jours.
+  C'est de la vraie télémétrie médiatique : « ce sujet explose et vire au
+  négatif ».
+- **Google News RSS** fournit les derniers titres, affichés sur la page dans le
+  panneau « Contexte monde », et notés par un lexique de mots à risque
+  (sanctions, tarifs, guerre, hack, défaut…) et de mots apaisants (cessez-le-feu,
+  accord, approbation…).
+- **IA (optionnelle)** : si le secret `LLM_API_KEY` existe, un modèle lit les
+  titres du jour et note le risque 0-100 par thème, plus une phrase de synthèse
+  en français affichée en tête du panneau. Appel au plus toutes les 3 h
+  (cache) : quelques centimes par jour avec un petit modèle.
+
+Ce composant ne pèse que 10 points, volontairement : les news sont bruyantes
+et souvent déjà pricées (le VIX et le DVOL les captent déjà en partie). Son
+vrai intérêt est le panneau, qui montre *ce qui se passe* à côté du score.
+
+**Activer l'IA** : Settings → Secrets and variables → Actions → *New repository
+secret* → nom `LLM_API_KEY`, valeur = ta clé. Provider et modèle se règlent
+dans `.github/workflows/update.yml` (`LLM_PROVIDER` = `anthropic` ou `openai`,
+`LLM_MODEL` vide = défaut). Sans secret, tout fonctionne avec le lexique seul.
+
+Ce que ce composant **ne fait pas** : lire les posts de Trump ou de qui que ce
+soit directement (pas d'API), ni distinguer la posture du fait sans l'IA. Il
+capte la couverture médiatique, avec quelques heures de décalage.
 
 Zones : 0-30 **Calme** · 30-55 **Vigilance** · 55-75 **Stress élevé** · 75-100 **Capitulation probable**.
 
@@ -68,6 +101,8 @@ git add -A && git commit -m "…" && git push
   escrow. `impact` : 1 mineur, 2 notable, 3 majeur.
 - **`manual.json`** (optionnel) : flux net hebdomadaire des ETF XRP en M$ quand
   tu vois le chiffre passer. `null` = ignoré.
+- **`themes.json`** : les thèmes news (requêtes GDELT et Google News, poids) et
+  les lexiques. Ajoute un thème si un sujet devient central (ex. une élection).
 - **Zone d'achat** : `.github/workflows/update.yml`, variables
   `BUY_ZONE_HIGH` / `BUY_ZONE_LOW`.
 - **Pondérations et seuils** : en tête de `collect.py` (`WEIGHTS`) et dans

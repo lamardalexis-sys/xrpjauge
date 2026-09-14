@@ -92,6 +92,26 @@
   .ev .when b { color: var(--ink); }
   .pill { font-size: 11.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--ink-2); margin-left: 6px; vertical-align: 1px; }
 
+  /* Contexte monde */
+  .h2-sub { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); margin-left: 6px; }
+  .ai-summary { margin: 0 0 12px; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 6px; font-size: 14px; color: var(--ink); }
+  .ai-summary small { display: block; color: var(--ink-2); margin-top: 3px; font-size: 12px; }
+  .theme { border-top: 1px solid var(--grid); padding: 10px 0; }
+  .theme:first-of-type { border-top: 0; padding-top: 0; }
+  .theme summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
+  .theme summary::-webkit-details-marker { display: none; }
+  .theme .tname { font-weight: 500; }
+  .theme .tmeta { color: var(--muted); font-size: 12.5px; }
+  .theme .tmeta b { color: var(--ink-2); font-weight: 600; }
+  .theme .tscore { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .theme .meter { margin-top: 4px; }
+  .theme ul { margin: 8px 0 0; padding-left: 0; list-style: none; }
+  .theme li { padding: 5px 0; border-top: 1px dashed var(--grid); font-size: 13.5px; display: flex; justify-content: space-between; gap: 10px; }
+  .theme li a { color: var(--ink); text-decoration: none; }
+  .theme li a:hover { text-decoration: underline; }
+  .theme li .src { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .theme .empty { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
   /* Historique */
   .spark { width: 100%; height: 120px; display: block; }
   .spark-note { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
@@ -168,6 +188,13 @@
     </section>
   </div>
 
+  <section class="card" style="margin-top:14px" id="world-card">
+    <h2>Contexte monde <span class="h2-sub">presse des dernières 24 h, par thème</span></h2>
+    <p class="ai-summary" id="ai-summary" hidden></p>
+    <div id="world"></div>
+    <div class="spark-note" id="world-note"></div>
+  </section>
+
   <section class="card" style="margin-top:14px">
     <h2>Historique du score</h2>
     <svg class="spark" id="spark" viewBox="0 0 800 120" preserveAspectRatio="none" role="img" aria-label="Historique du score sur 180 jours"></svg>
@@ -199,6 +226,7 @@
     liquidity: ['Liquidité', 'Stablecoins, dominance BTC, flux ETF (manuel)'],
     sentiment: ['Sentiment', 'Fear & Greed et sa variation 7 j'],
     events: ['Événements', 'Décisions binaires à moins de 14 jours'],
+    news: ['Géopolitique & news', 'Tonalité et volume de la presse mondiale (GDELT), titres, lexique, IA'],
   };
   const fmtN = (v, d = 2) => v == null ? '–' : Number(v).toLocaleString('fr-FR', { maximumFractionDigits: d });
 
@@ -335,6 +363,11 @@
         const nxt = det.upcoming.find((e) => e.days >= 0) || det.upcoming[0];
         bits.push(`prochain : ${nxt.name}`);
       }
+      if (k === 'news' && det.themes && det.themes.length) {
+        const top = det.themes.filter((t) => t.score != null).sort((a, b) => b.score - a.score)[0];
+        if (top) bits.push(`thème le plus tendu : ${top.label} (${Math.round(top.score)})`);
+        if (det.llm && det.llm.global != null) bits.push(`IA ${det.llm.global}`);
+      }
       if (bits.length) why += ' · ' + bits.join(' · ');
       row.innerHTML = `
         <div><span class="name">${NAMES[k][0]}</span><span class="weight">poids ${w}</span></div>
@@ -356,6 +389,9 @@
       e.appendChild(row);
     });
 
+    // Contexte monde
+    drawWorld((d.details && d.details.news) || {}, d.components && d.components.news);
+
     // Historique
     drawSpark(d.history || []);
 
@@ -367,6 +403,47 @@
       $('err').hidden = false;
       $('err').textContent = 'Composants indisponibles à la dernière exécution (score re-normalisé) : ' + d.missing.join(', ');
     }
+  }
+
+  function drawWorld(news, compScore) {
+    const wrap = $('world'); wrap.innerHTML = '';
+    const themes = news.themes || [];
+    if (!themes.length) {
+      $('world-card').hidden = true;
+      return;
+    }
+    $('world-card').hidden = false;
+    const llm = news.llm;
+    if (llm && llm.summary) {
+      $('ai-summary').hidden = false;
+      $('ai-summary').innerHTML = `${llm.summary}<small>Synthèse IA (${llm.model}${llm.cached ? ', cache' : ''}) · risque global ${llm.global}/100 · ${fmtDate(llm.at)}</small>`;
+    } else {
+      $('ai-summary').hidden = true;
+    }
+    themes.slice().sort((a, b) => (b.score || 0) - (a.score || 0)).forEach((t) => {
+      const det = document.createElement('details'); det.className = 'theme';
+      const col = colorFor(t.score);
+      const meta = [];
+      if (t.tone_24h != null) {
+        const dlt = t.tone_7d != null ? t.tone_24h - t.tone_7d : null;
+        meta.push(`tonalité <b>${fmtN(t.tone_24h, 1)}</b>` + (dlt != null ? ` (${dlt > 0 ? '+' : ''}${fmtN(dlt, 1)} vs 7 j)` : ''));
+      }
+      if (t.vol_ratio != null) meta.push(`volume <b>×${fmtN(t.vol_ratio, 1)}</b>`);
+      if (t.ai != null) meta.push(`IA <b>${t.ai}</b>`);
+      if (t.lex != null) meta.push(`lexique <b>${Math.round(t.lex)}</b>`);
+      const items = (t.headlines || []).map((h) =>
+        `<li><a href="${h.url}" target="_blank" rel="noopener">${h.t}</a><span class="src">${h.src || ''}${h.age_h != null ? ' · ' + Math.round(h.age_h) + ' h' : ''}</span></li>`).join('');
+      det.innerHTML = `
+        <summary>
+          <div><span class="tname">${t.label}</span></div>
+          <div class="tscore" style="color:${t.score == null ? 'var(--muted)' : 'inherit'}">${t.score == null ? 'n/d' : Math.round(t.score)}</div>
+          <div class="meter" style="--c:${col}; grid-column: 1 / -1"><i style="width:${t.score || 0}%"></i></div>
+          <div class="tmeta" style="grid-column: 1 / -1">${meta.join(' · ') || 'aucune donnée'}</div>
+        </summary>
+        ${items ? `<ul>${items}</ul>` : '<div class="empty">Aucun titre récupéré.</div>'}`;
+      wrap.appendChild(det);
+    });
+    $('world-note').textContent = 'Tonalité GDELT : 0 neutre, -3 franchement négatif, -6 très négatif. Volume : attention médiatique 24 h vs moyenne 7 j. Clique un thème pour voir les titres. Ce panneau informe ; il ne pèse que ' + ((compScore != null) ? '10 points' : 'rien') + ' dans le score.';
   }
 
   function drawSpark(hist) {

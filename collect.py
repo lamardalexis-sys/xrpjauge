@@ -45,14 +45,16 @@ BUY_ZONE_HIGH = float(os.environ.get("BUY_ZONE_HIGH", "1.12"))
 BUY_ZONE_LOW = float(os.environ.get("BUY_ZONE_LOW", "0.90"))
 
 WEIGHTS = {
-    "trend": 20,       # XRP/BTC vs SMA 50/200, ratio XRP/BTC
-    "momentum": 15,    # chute 7/30 j, hausse parabolique, vol réalisée, volume anormal
-    "leverage": 20,    # funding (dernier + 7 j), OI, long/short, liquidations
+    "trend": 18,       # XRP/BTC vs SMA 50/200, ratio XRP/BTC
+    "momentum": 14,    # chute 7/30 j, hausse parabolique, vol réalisée, volume anormal
+    "leverage": 18,    # funding (dernier + 7 j), OI, long/short, liquidations
     "volatility": 10,  # vol implicite BTC (DVOL) + VIX
     "liquidity": 10,   # stablecoins 7 j, dominance BTC, flux ETF (manuel)
-    "sentiment": 10,   # Fear & Greed
-    "events": 15,      # événements binaires < 14 j
+    "sentiment": 8,    # Fear & Greed
+    "events": 12,      # événements binaires < 14 j
+    "news": 10,        # géopolitique & news (GDELT, RSS, lexique, IA optionnelle) — voir news.py
 }
+THEMES_PATH = os.path.join(ROOT, "themes.json")
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; xrp-stress-gauge/2.0; +github pages)"}
 
@@ -590,6 +592,8 @@ def compute(inputs, events, now, verbose=False):
     comps["sentiment"], details["sentiment"] = sentiment_component(inputs.get("fng_hist"))
     comps["events"], upcoming = events_component(events, now)
     details["events"] = {"upcoming": upcoming}
+    comps["news"] = inputs.get("news_score")
+    details["news"] = inputs.get("news_detail") or {}
 
     avail = {k: v for k, v in comps.items() if v is not None}
     wsum = sum(WEIGHTS[k] for k in avail)
@@ -658,6 +662,19 @@ def main():
     inputs = mock_inputs() if args.mock else real_inputs(args.verbose)
 
     old = load_json(args.out, None)
+
+    # Géopolitique & news (module séparé ; ne bloque jamais le reste)
+    try:
+        import news as newsmod
+        themes_cfg = load_json(THEMES_PATH, {})
+        if themes_cfg.get("themes"):
+            prev = {"news": (old or {}).get("details", {}).get("news", {})} if old else None
+            inputs["news_score"], inputs["news_detail"] = newsmod.collect_news(
+                themes_cfg, now, previous=prev, verbose=args.verbose, mock=args.mock)
+    except Exception as e:  # noqa: BLE001
+        log(args.verbose, f"  [news] module en échec : {e}")
+        inputs["news_score"], inputs["news_detail"] = None, {}
+
     result = merge_history(compute(inputs, events, now, args.verbose), old)
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
@@ -666,7 +683,7 @@ def main():
 
     print(f"score={result['score']} zone={result['zone_label']} delta24h={result['delta_24h']} "
           f"missing={result['missing']} → {args.out}")
-    if len(result["missing"]) >= 5:
+    if len(result["missing"]) >= 6:
         sys.exit(2)
 
 
