@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thermomètre XRP</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --border: rgba(11,11,11,0.10);
+    --track: #ecebe6;
+    --good: #0ca30c;
+    --warning: #fab219;
+    --serious: #ec835a;
+    --critical: #d03b3b;
+    --accent: #2a78d6;
+    --accent-soft: #cde2fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+      --muted: #898781; --grid: #2c2c2a; --border: rgba(255,255,255,0.10);
+      --track: #262624; --accent: #3987e5; --accent-soft: #1c3a63;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --border: rgba(255,255,255,0.10);
+    --track: #262624; --accent: #3987e5; --accent-soft: #1c3a63;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 20px 16px 48px; }
+  header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  header h1 { font-size: 18px; font-weight: 600; margin: 0; }
+  header .updated { color: var(--muted); font-size: 13px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 14px; }
+
+  /* Jauge */
+  .gauge { display: grid; grid-template-columns: minmax(240px, 380px) 1fr; gap: 20px; align-items: center; }
+  @media (max-width: 640px) { .gauge { grid-template-columns: 1fr; } }
+  .gauge svg { width: 100%; height: auto; display: block; }
+  .hero { text-align: center; }
+  .hero .value { font-size: 56px; font-weight: 600; line-height: 1; letter-spacing: -0.02em; }
+  .hero .value small { font-size: 22px; color: var(--muted); font-weight: 500; margin-left: 2px; }
+  .hero .zone { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; }
+  .hero .zone .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--z); box-shadow: 0 0 0 2px var(--surface); }
+  .hero .hint { color: var(--ink-2); font-size: 14px; margin-top: 10px; max-width: 34ch; margin-left: auto; margin-right: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; margin-top: 12px; color: var(--ink-2); font-size: 12.5px; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+
+  /* Composants */
+  h2 { font-size: 14px; font-weight: 600; color: var(--ink-2); margin: 0 0 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .comp { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 9px 0; border-top: 1px solid var(--grid); }
+  .comp:first-of-type { border-top: 0; padding-top: 0; }
+  .comp .name { font-weight: 500; }
+  .comp .weight { color: var(--muted); font-size: 12.5px; margin-left: 6px; }
+  .comp .val { font-weight: 600; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
+  .comp .val.na { color: var(--muted); font-weight: 400; }
+  .meter { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+  .meter i { display: block; height: 100%; border-radius: 3px; background: var(--c); width: 0; transition: width .4s ease; }
+  .comp .why { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; }
+
+  /* Tuiles */
+  .tile .label { color: var(--ink-2); font-size: 13px; }
+  .tile .num { font-size: 26px; font-weight: 600; margin-top: 2px; }
+  .tile .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .tile .sub b { color: var(--ink-2); font-weight: 600; }
+  .inzone { color: #006300; font-weight: 600; }
+  :root[data-theme="dark"] .inzone { color: var(--good); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .inzone { color: var(--good); } }
+
+  /* Événements */
+  .ev { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--grid); }
+  .ev:first-of-type { border-top: 0; padding-top: 0; }
+  .ev .when { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  .ev .when b { color: var(--ink); }
+  .pill { font-size: 11.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--ink-2); margin-left: 6px; vertical-align: 1px; }
+
+  /* Historique */
+  .spark { width: 100%; height: 120px; display: block; }
+  .spark-note { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+
+  .note { color: var(--ink-2); font-size: 13.5px; margin-top: 16px; }
+  .note p { margin: 6px 0; }
+  .err { background: var(--surface); border: 1px solid var(--critical); color: var(--ink); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Thermomètre de stress XRP</h1>
+    <div class="updated" id="updated">chargement…</div>
+  </header>
+
+  <div class="err" id="err" hidden></div>
+
+  <section class="card gauge" aria-labelledby="score-label">
+    <svg viewBox="0 0 320 190" role="img" aria-label="Jauge du score de stress" id="gauge">
+      <defs></defs>
+      <!-- zones (arcs) -->
+      <g id="arcs" fill="none" stroke-width="22" stroke-linecap="butt"></g>
+      <!-- graduations -->
+      <g id="ticks" fill="var(--muted)" font-size="11" text-anchor="middle"></g>
+      <!-- aiguille -->
+      <g id="needle">
+        <line x1="160" y1="160" x2="160" y2="52" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" id="needle-line"/>
+        <circle cx="160" cy="160" r="7" fill="var(--ink)"/>
+        <circle cx="160" cy="160" r="3" fill="var(--surface)"/>
+      </g>
+    </svg>
+    <div class="hero">
+      <div class="value" id="score-label"><span id="score">–</span><small>/100</small></div>
+      <div class="zone" id="zone" style="--z: var(--muted)"><span class="dot"></span><span id="zone-text">–</span></div>
+      <div class="hint" id="hint">Le score monte quand les conditions d'une capitulation se mettent en place.</div>
+      <div class="legend">
+        <span style="--c: var(--good)">0–30 Calme</span>
+        <span style="--c: var(--warning)">30–55 Vigilance</span>
+        <span style="--c: var(--serious)">55–75 Stress élevé</span>
+        <span style="--c: var(--critical)">75–100 Capitulation probable</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="card tile">
+      <div class="label">XRP / USD</div>
+      <div class="num" id="xrp">–</div>
+      <div class="sub" id="xrp-sub">–</div>
+    </section>
+    <section class="card tile">
+      <div class="label">Zone d'achat</div>
+      <div class="num" id="buy">–</div>
+      <div class="sub" id="buy-sub">–</div>
+    </section>
+    <section class="card tile">
+      <div class="label">BTC / USD</div>
+      <div class="num" id="btc">–</div>
+      <div class="sub" id="btc-sub">–</div>
+    </section>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Composants du score</h2>
+      <div id="components"></div>
+    </section>
+    <section class="card">
+      <h2>Événements binaires à venir</h2>
+      <div id="events"></div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:14px">
+    <h2>Historique du score</h2>
+    <svg class="spark" id="spark" viewBox="0 0 800 120" preserveAspectRatio="none" role="img" aria-label="Historique du score sur 180 jours"></svg>
+    <div class="spark-note" id="spark-note">Un point par jour, 180 jours max. L'historique se remplit au fil des exécutions.</div>
+  </section>
+
+  <div class="note">
+    <p><b>Comment lire.</b> Ce n'est pas une prédiction de black swan : par définition, un black swan est l'événement que les signaux ne voient pas venir. C'est un indicateur de <i>conditions</i> : tendance cassée, levier excessif, peur ou complaisance extrêmes, événement binaire imminent. Quand il passe au rouge, la zone d'achat se rapproche ; quand il est vert, rien ne presse.</p>
+    <p><b>Règles fixées à l'avance.</b> Ordres échelonnés dans la zone d'achat, un seul renfort, invalidation sur clôture hebdo sous 0,95 $. Le thermomètre sert à exécuter ce plan, pas à le renégocier.</p>
+    <p id="sources" style="color:var(--muted)"></p>
+  </div>
+</main>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const ZONES = [
+    { from: 0,  to: 30,  color: 'var(--good)' },
+    { from: 30, to: 55,  color: 'var(--warning)' },
+    { from: 55, to: 75,  color: 'var(--serious)' },
+    { from: 75, to: 100, color: 'var(--critical)' },
+  ];
+  const ZONE_COLOR = { calme: 'var(--good)', vigilance: 'var(--warning)', eleve: 'var(--serious)', critique: 'var(--critical)' };
+  const NAMES = {
+    trend: ['Tendance', 'XRP et BTC face à leurs moyennes 50 et 200 jours'],
+    momentum: ['Momentum', 'Chute récente, ou hausse parabolique fragile'],
+    leverage: ['Levier', 'Funding rate et open interest des futures'],
+    sentiment: ['Sentiment', 'Indice Fear & Greed'],
+    events: ['Événements', 'Décisions binaires à moins de 14 jours'],
+  };
+
+  // Géométrie de la jauge : demi-cercle centré (160,160), rayon 110, de 180° à 0°
+  const CX = 160, CY = 160, R = 110;
+  function pt(pct, r = R) {
+    const a = Math.PI * (1 - pct / 100);
+    return [CX + r * Math.cos(a), CY - r * Math.sin(a)];
+  }
+  function arc(p0, p1) {
+    const [x0, y0] = pt(p0), [x1, y1] = pt(p1);
+    return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+  }
+  function drawGauge() {
+    const g = $('arcs');
+    const gap = 0.9; // écart entre zones (en % de l'arc) → ~2 px de surface
+    ZONES.forEach((z, i) => {
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const from = i === 0 ? z.from : z.from + gap / 2;
+      const to = i === ZONES.length - 1 ? z.to : z.to - gap / 2;
+      p.setAttribute('d', arc(from, to));
+      p.setAttribute('stroke', z.color);
+      g.appendChild(p);
+    });
+    const t = $('ticks');
+    [0, 30, 55, 75, 100].forEach((v) => {
+      const [x, y] = pt(v, R + 22);
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', x.toFixed(1)); txt.setAttribute('y', (y + 4).toFixed(1));
+      txt.textContent = v;
+      t.appendChild(txt);
+    });
+  }
+  function setNeedle(score) {
+    const angle = -90 + (score / 100) * 180; // -90° (gauche) → +90° (droite)
+    $('needle').setAttribute('transform', `rotate(${angle.toFixed(2)} ${CX} ${CY})`);
+  }
+
+  function fmtUSD(v, digits) {
+    if (v == null) return '–';
+    return v.toLocaleString('fr-FR', { minimumFractionDigits: digits, maximumFractionDigits: digits }) + ' $';
+  }
+  function fmtPct(v) {
+    if (v == null) return '–';
+    const s = v > 0 ? '+' : '';
+    return s + v.toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %';
+  }
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
+  }
+  function colorFor(v) {
+    if (v == null) return 'var(--muted)';
+    if (v < 30) return 'var(--good)';
+    if (v < 55) return 'var(--warning)';
+    if (v < 75) return 'var(--serious)';
+    return 'var(--critical)';
+  }
+
+  function render(d) {
+    $('updated').textContent = 'Mis à jour le ' + fmtDate(d.updated_at) + ' (Paris)';
+    $('score').textContent = d.score.toLocaleString('fr-FR', { maximumFractionDigits: 0 });
+    setNeedle(d.score);
+    $('zone').style.setProperty('--z', ZONE_COLOR[d.zone] || 'var(--muted)');
+    $('zone-text').textContent = d.zone_label;
+    $('hint').textContent = {
+      calme: 'Conditions normales. Le DCA continue à son rythme, rien à faire.',
+      vigilance: 'Quelques ingrédients présents. Vérifie que tes ordres échelonnés sont bien placés.',
+      eleve: 'Le marché est fragile. Cash prêt sur l’exchange, ordres en place, pas de décision à chaud.',
+      critique: 'Conditions de capitulation réunies. C’est le moment d’exécuter le plan, pas de le changer.',
+    }[d.zone] || '';
+
+    // Prix
+    const xrp = d.prices && d.prices.xrp, btc = d.prices && d.prices.btc;
+    $('xrp').textContent = fmtUSD(xrp, 4);
+    const m = d.details && d.details.momentum || {};
+    const tx = d.details && d.details.trend && d.details.trend.xrp || {};
+    $('xrp-sub').innerHTML = `7 j <b>${fmtPct(m.change_7d_pct)}</b> · 30 j <b>${fmtPct(m.change_30d_pct)}</b>` +
+      (tx.dist_sma200_pct != null ? ` · SMA200 <b>${fmtPct(tx.dist_sma200_pct)}</b>` : '');
+    $('btc').textContent = fmtUSD(btc, 0);
+    const tb = d.details && d.details.trend && d.details.trend.btc || {};
+    $('btc-sub').innerHTML = (tb.dist_sma200_pct != null ? `vs SMA200 <b>${fmtPct(tb.dist_sma200_pct)}</b>` : '') +
+      (tb.dist_sma50_pct != null ? ` · vs SMA50 <b>${fmtPct(tb.dist_sma50_pct)}</b>` : '');
+
+    // Zone d'achat
+    const bz = d.buy_zone;
+    if (bz) {
+      $('buy').textContent = `${bz.low.toLocaleString('fr-FR')} – ${bz.high.toLocaleString('fr-FR')} $`;
+      $('buy-sub').innerHTML = bz.in_zone
+        ? '<span class="inzone">Prix dans la zone — exécute le plan</span>'
+        : `Haut de zone à <b>${fmtPct(bz.dist_to_high_pct)}</b> · bas à <b>${fmtPct(bz.dist_to_low_pct)}</b>`;
+    }
+
+    // Composants
+    const c = $('components'); c.innerHTML = '';
+    Object.keys(NAMES).forEach((k) => {
+      const v = d.components[k];
+      const w = d.weights[k];
+      const row = document.createElement('div'); row.className = 'comp';
+      const col = colorFor(v);
+      let why = NAMES[k][1];
+      const det = d.details[k] || {};
+      if (k === 'leverage' && det.funding_pct_8h != null) why += ` · funding ${det.funding_pct_8h.toLocaleString('fr-FR', { maximumFractionDigits: 4 })} %/8 h` + (det.oi_change_7d_pct != null ? `, OI 7 j ${fmtPct(det.oi_change_7d_pct)}` : '');
+      if (k === 'sentiment' && det.fear_greed != null) why += ` · F&G ${det.fear_greed}`;
+      if (k === 'events' && det.upcoming && det.upcoming.length) {
+        const nxt = det.upcoming.find((e) => e.days >= 0) || det.upcoming[0];
+        why += ` · prochain : ${nxt.name}`;
+      }
+      row.innerHTML = `
+        <div><span class="name">${NAMES[k][0]}</span><span class="weight">poids ${w}</span></div>
+        <div class="val ${v == null ? 'na' : ''}">${v == null ? 'n/d' : Math.round(v)}</div>
+        <div class="meter" style="--c:${col}"><i style="width:${v == null ? 0 : v}%"></i></div>
+        <div class="why">${why}</div>`;
+      c.appendChild(row);
+    });
+
+    // Événements
+    const e = $('events'); e.innerHTML = '';
+    const ups = (d.details.events && d.details.events.upcoming) || [];
+    if (!ups.length) e.innerHTML = '<div class="ev"><span class="when">Aucun événement dans events.json</span></div>';
+    ups.forEach((ev) => {
+      const row = document.createElement('div'); row.className = 'ev';
+      const when = ev.days < 0 ? `il y a ${Math.abs(Math.round(ev.days))} j` : ev.days < 1 ? '<b>aujourd’hui</b>' : `dans <b>${Math.round(ev.days)} j</b>`;
+      const imp = ['', 'mineur', 'notable', 'majeur'][ev.impact] || '';
+      row.innerHTML = `<div>${ev.name}<span class="pill">${imp}</span></div><div class="when">${when} · ${new Date(ev.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</div>`;
+      e.appendChild(row);
+    });
+
+    // Historique
+    drawSpark(d.history || []);
+
+    // Sources
+    const s = d.sources || {};
+    const parts = Object.keys(s).filter((k) => s[k]).map((k) => `${k} : ${s[k]}`);
+    $('sources').textContent = parts.length ? 'Sources : ' + parts.join(' · ') + '.' : '';
+    if (d.missing && d.missing.length) {
+      $('err').hidden = false;
+      $('err').textContent = 'Composants indisponibles à la dernière exécution (score re-normalisé) : ' + d.missing.join(', ');
+    }
+  }
+
+  function drawSpark(hist) {
+    const svg = $('spark'); svg.innerHTML = '';
+    const W = 800, H = 120, PAD = 6;
+    const ns = 'http://www.w3.org/2000/svg';
+    // bandes de zones
+    ZONES.forEach((z) => {
+      const r = document.createElementNS(ns, 'rect');
+      const y0 = PAD + (1 - z.to / 100) * (H - 2 * PAD), y1 = PAD + (1 - z.from / 100) * (H - 2 * PAD);
+      r.setAttribute('x', 0); r.setAttribute('width', W);
+      r.setAttribute('y', y0.toFixed(1)); r.setAttribute('height', (y1 - y0).toFixed(1));
+      r.setAttribute('fill', z.color); r.setAttribute('opacity', '0.10');
+      svg.appendChild(r);
+    });
+    if (hist.length < 2) {
+      $('spark-note').textContent = `Historique : ${hist.length} point${hist.length > 1 ? 's' : ''}. La courbe apparaît à partir de 2 jours d'exécution.`;
+      if (hist.length === 1) {
+        const c = document.createElementNS(ns, 'circle');
+        c.setAttribute('cx', W - PAD); c.setAttribute('cy', (PAD + (1 - hist[0].s / 100) * (H - 2 * PAD)).toFixed(1));
+        c.setAttribute('r', 4); c.setAttribute('fill', 'var(--ink)');
+        svg.appendChild(c);
+      }
+      return;
+    }
+    const n = hist.length;
+    const x = (i) => PAD + (i / (n - 1)) * (W - 2 * PAD);
+    const y = (s) => PAD + (1 - s / 100) * (H - 2 * PAD);
+    const dpath = hist.map((h, i) => `${i ? 'L' : 'M'} ${x(i).toFixed(1)} ${y(h.s).toFixed(1)}`).join(' ');
+    const p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', dpath); p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'var(--ink)');
+    p.setAttribute('stroke-width', '2'); p.setAttribute('vector-effect', 'non-scaling-stroke');
+    svg.appendChild(p);
+    const last = hist[n - 1];
+    const c = document.createElementNS(ns, 'circle');
+    c.setAttribute('cx', x(n - 1).toFixed(1)); c.setAttribute('cy', y(last.s).toFixed(1)); c.setAttribute('r', 4); c.setAttribute('fill', 'var(--ink)');
+    svg.appendChild(c);
+    $('spark-note').textContent = `${n} jours · du ${hist[0].d} au ${last.d} · min ${Math.min(...hist.map(h => h.s))} · max ${Math.max(...hist.map(h => h.s))}`;
+  }
+
+  drawGauge();
+  fetch('data.json?t=' + Date.now(), { cache: 'no-store' })
+    .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(render)
+    .catch((e) => {
+      $('err').hidden = false;
+      $('err').textContent = 'Impossible de charger data.json (' + e.message + '). Lance collect.py ou attends la prochaine exécution GitHub Actions.';
+      $('updated').textContent = '';
+    });
+})();
+</script>
+</body>
+</html>
