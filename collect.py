@@ -615,7 +615,7 @@ def compute(inputs, events, now, verbose=False):
 
     # Sous-scores détaillés utiles à l'affichage
     return {
-        "version": 2,
+        "version": 3,
         "updated_at": now.isoformat(timespec="seconds"),
         "score": score,
         "zone": zkey,

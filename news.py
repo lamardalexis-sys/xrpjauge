@@ -26,6 +26,7 @@ import os
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -61,11 +62,37 @@ def _clamp(x, lo=0.0, hi=100.0):
 # --------------------------------------------------------------------------- #
 # 1. GDELT
 # --------------------------------------------------------------------------- #
+GDELT_PAUSE_S = float(os.environ.get("GDELT_PAUSE_S", "6"))      # GDELT demande ≥ 5 s entre requêtes
+GDELT_RETRIES = int(os.environ.get("GDELT_RETRIES", "2"))         # réessais sur 429 (IP partagée GitHub)
+GDELT_VOLUME = os.environ.get("GDELT_VOLUME", "0") == "1"         # 2e requête (volume) par thème : off par défaut
+_gdelt_dead = False  # si GDELT refuse tout, on arrête d'insister pour ce run
+
+
 def gdelt_timeline(query, mode):
-    """mode = 'timelinetone' ou 'timelinevol'. Renvoie [(datetime, valeur), ...] sur 7 j."""
+    """mode = 'timelinetone' ou 'timelinevol'. Renvoie [(datetime, valeur), ...] sur 7 j.
+    Réessaie sur HTTP 429 avec une attente croissante (15 s, 30 s)."""
+    global _gdelt_dead
+    if _gdelt_dead:
+        raise RuntimeError("GDELT indisponible pour ce run (429 répétés)")
     q = urllib.parse.quote(query, safe="")
     url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={q}&mode={mode}&timespan=7d&format=json"
-    d = _get(url)
+    raw = None
+    for attempt in range(GDELT_RETRIES + 1):
+        try:
+            raw = _get(url, timeout=40, as_json=False)
+            break
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < GDELT_RETRIES:
+                time.sleep(15 * (attempt + 1))
+                continue
+            if e.code == 429:
+                _gdelt_dead = True
+            raise
+    try:
+        d = json.loads(raw)
+    except Exception:  # noqa: BLE001
+        # GDELT renvoie du texte brut en cas de requête refusée
+        raise RuntimeError(f"réponse non-JSON : {raw.strip()[:140]!r}")
     series = d.get("timeline", [])
     if not series:
         return []
@@ -82,13 +109,22 @@ def gdelt_timeline(query, mode):
 def gdelt_theme(query, now, verbose=False):
     """Tonalité 24 h vs 7 j, volume 24 h vs 7 j."""
     out = {}
+    tone, vol = [], []
     try:
         tone = gdelt_timeline(query, "timelinetone")
-        time.sleep(1.2)  # politesse : GDELT limite les rafales
-        vol = gdelt_timeline(query, "timelinevol")
-        time.sleep(1.2)
+        _log(verbose, "    gdelt tone ok")
     except Exception as e:  # noqa: BLE001
-        _log(verbose, f"    gdelt échec : {e}")
+        _log(verbose, f"    gdelt tone échec : {e}")
+    if not _gdelt_dead:
+        time.sleep(GDELT_PAUSE_S)
+    if GDELT_VOLUME and not _gdelt_dead:
+        try:
+            vol = gdelt_timeline(query, "timelinevol")
+            _log(verbose, "    gdelt vol ok")
+        except Exception as e:  # noqa: BLE001
+            _log(verbose, f"    gdelt vol échec : {e}")
+        time.sleep(GDELT_PAUSE_S)
+    if not tone and not vol:
         return None
     cutoff = now - timedelta(hours=24)
     if tone:
@@ -154,8 +190,8 @@ def rss_headlines(query, now, max_items=8, max_age_h=30):
     return items[:max_items]
 
 
-def lexicon_score(headlines, risk_lex, calm_lex):
-    """Score 0-100 : densité de mots à risque dans les titres, corrigée des mots apaisants."""
+def lexicon_raw(headlines, risk_lex, calm_lex):
+    """Densité brute de mots à risque par titre (≈0 calme, ≈2 tendu, ≈4 très tendu)."""
     if not headlines:
         return None
     total = 0.0
@@ -169,8 +205,23 @@ def lexicon_score(headlines, risk_lex, calm_lex):
             if w in t:
                 s += wt  # négatif
         total += max(0.0, s)
-    avg = total / len(headlines)  # ~0 calme, ~2 tendu, ~4 très tendu
-    return _lin(avg, 0.3, 0, 3.5, 100)
+    return total / len(headlines)
+
+
+def lexicon_score(raw, history):
+    """Score 0-100 à partir de la densité brute ET de son écart à la moyenne glissante
+    du thème (≈ 7 jours d'exécutions horaires). Un thème de guerre contient toujours des
+    mots de guerre : c'est la déviation qui est le signal, pas le niveau."""
+    if raw is None:
+        return None
+    abs_s = _lin(raw, 0.5, 0, 5.0, 100)          # niveau absolu, courbe douce
+    hist = [x for x in (history or []) if x is not None]
+    if len(hist) >= 12:
+        base = sum(hist) / len(hist)
+        dev = (raw - base) / base if base > 0.2 else (raw - base)
+        dev_s = _lin(dev, 0.0, 0, 1.0, 100)      # +100 % vs habitude = 100
+        return 0.4 * abs_s + 0.6 * dev_s
+    return 0.7 * abs_s                            # sans historique : niveau seul, plafonné à 70
 
 
 # --------------------------------------------------------------------------- #
@@ -196,9 +247,11 @@ def _extract_json(txt):
 
 
 def llm_classify(theme_headlines, verbose=False):
-    key = os.environ.get("LLM_API_KEY")
+    key = (os.environ.get("LLM_API_KEY") or "").strip()
     if not key:
+        _log(verbose, "  [news] llm : pas de clé (secret LLM_API_KEY absent ou vide) → lexique seul")
         return None
+    _log(verbose, f"  [news] llm : appel {os.environ.get('LLM_PROVIDER', 'anthropic')} …")
     provider = os.environ.get("LLM_PROVIDER", "anthropic").lower()
     model = os.environ.get("LLM_MODEL") or ("claude-haiku-4-5" if provider == "anthropic" else "gpt-4o-mini")
 
@@ -233,13 +286,21 @@ def llm_classify(theme_headlines, verbose=False):
         if not parsed or "global" not in parsed:
             _log(verbose, f"    llm : réponse non exploitable : {txt[:200]}")
             return None
+        _log(verbose, f"  [news] llm : ok ({model}) risque global {parsed['global']}")
         return {"provider": provider, "model": model,
                 "global": int(_clamp(float(parsed["global"]))),
                 "themes": {k: int(_clamp(float(v))) for k, v in (parsed.get("themes") or {}).items()},
                 "summary": str(parsed.get("summary", "")).strip()[:240],
                 "at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    except urllib.error.HTTPError as e:
+        try:
+            body = e.read().decode("utf-8", errors="replace")[:200]
+        except Exception:  # noqa: BLE001
+            body = ""
+        _log(verbose, f"  [news] llm échec : HTTP {e.code} {body}")
+        return None
     except Exception as e:  # noqa: BLE001
-        _log(verbose, f"    llm échec : {e}")
+        _log(verbose, f"  [news] llm échec : {e}")
         return None
 
 
@@ -252,6 +313,8 @@ def collect_news(themes_cfg, now, previous=None, verbose=False, mock=False):
     calm_lex = themes_cfg.get("calm_lexicon", {})
     results = []
     theme_headlines = {}
+    prev_news = (previous or {}).get("news", {}) or {}
+    lex_history = dict(prev_news.get("lex_history") or {})
 
     for th in themes:
         _log(verbose, f"  [news] thème {th['key']}")
@@ -265,15 +328,19 @@ def collect_news(themes_cfg, now, previous=None, verbose=False, mock=False):
                 _log(verbose, f"    rss échec : {e}")
                 hs = []
         tone_s, vol_s = gdelt_score(g)
-        lex_s = lexicon_score(hs, risk_lex, calm_lex)
+        raw = lexicon_raw(hs, risk_lex, calm_lex)
+        lex_s = lexicon_score(raw, lex_history.get(th["key"]))
+        if raw is not None:
+            lex_history[th["key"]] = (lex_history.get(th["key"]) or [])[-167:] + [round(raw, 3)]
         results.append({"key": th["key"], "label": th["label"], "weight": float(th.get("weight", 1)),
-                        "gdelt": g, "tone_s": tone_s, "vol_s": vol_s, "lex_s": lex_s, "headlines": hs})
+                        "gdelt": g, "tone_s": tone_s, "vol_s": vol_s, "lex_s": lex_s, "lex_raw": raw,
+                        "headlines": hs})
         theme_headlines[th["key"]] = (th["label"], hs)
 
     # IA : cache si le précédent résultat est récent
     llm = None
     every_h = float(os.environ.get("LLM_EVERY_HOURS", "3"))
-    prev_llm = (previous or {}).get("news", {}).get("llm") if previous else None
+    prev_llm = prev_news.get("llm")
     if prev_llm and prev_llm.get("at"):
         try:
             age_h = (now - datetime.fromisoformat(prev_llm["at"])).total_seconds() / 3600
@@ -314,7 +381,7 @@ def collect_news(themes_cfg, now, previous=None, verbose=False, mock=False):
         })
 
     component = round(acc / wacc, 1) if wacc else None
-    return component, {"llm": llm, "themes": out_themes}
+    return component, {"llm": llm, "themes": out_themes, "lex_history": lex_history}
 
 
 def _mock_theme(key):
