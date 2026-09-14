@@ -1,19 +1,24 @@
 {
-  "updated_at": "2026-09-14T09:58:48+00:00",
-  "score": 24.2,
+  "version": 2,
+  "updated_at": "2026-09-14T10:52:16+00:00",
+  "score": 27.7,
   "zone": "calme",
   "zone_label": "Calme",
   "weights": {
-    "trend": 25,
+    "trend": 20,
     "momentum": 15,
-    "leverage": 25,
-    "sentiment": 15,
-    "events": 20
+    "leverage": 20,
+    "volatility": 10,
+    "liquidity": 10,
+    "sentiment": 10,
+    "events": 15
   },
   "components": {
-    "trend": 0.0,
+    "trend": 0.2,
     "momentum": 0.0,
-    "leverage": 6.2,
+    "leverage": 43.5,
+    "volatility": 7.1,
+    "liquidity": 14.2,
     "sentiment": 18.0,
     "events": 100.0
   },
@@ -21,26 +26,48 @@
     "trend": {
       "xrp": {
         "sma200": 1.273,
-        "dist_sma200_pct": 10.31,
-        "sma50": 1.2277,
-        "dist_sma50_pct": 14.39
+        "dist_sma200_pct": 9.77,
+        "sma50": 1.2275,
+        "dist_sma50_pct": 13.84
       },
       "btc": {
-        "sma200": 70190.7815,
-        "dist_sma200_pct": 11.34,
-        "sma50": 71413.456,
-        "dist_sma50_pct": 9.44
-      }
+        "sma200": 70189.463,
+        "dist_sma200_pct": 10.97,
+        "sma50": 71408.182,
+        "dist_sma50_pct": 9.08
+      },
+      "xrp_btc_ratio_sats": 1794,
+      "xrp_vs_btc_30d_pct": 12.87
     },
     "momentum": {
-      "change_7d_pct": 0.56,
-      "change_30d_pct": 40.18
+      "change_7d_pct": 0.07,
+      "change_30d_pct": 39.49,
+      "rvol_7d_pct": 54.4,
+      "rvol_30d_pct": 89.5,
+      "volume_vs_30d": 0.41
     },
     "leverage": {
-      "funding_pct_8h": 0.0073
+      "funding_pct_8h": 0.0064,
+      "funding_avg7d_pct_8h": 0.0031,
+      "oi_change_7d_pct": -6.49,
+      "long_short_ratio": 2.47,
+      "liq_long_share_pct": 6.6,
+      "liq_total_usd": 411016
+    },
+    "volatility": {
+      "btc_dvol": 38.0,
+      "btc_dvol_avg30": 38.4,
+      "vix": 17.73,
+      "vix_avg": 15.39
+    },
+    "liquidity": {
+      "stablecoins_7d_pct": -0.13,
+      "stablecoins_usd_bn": 310.0,
+      "btc_dominance_pct": 58.91
     },
     "sentiment": {
-      "fear_greed": 57
+      "fear_greed": 57,
+      "fear_greed_change_7d": -14
     },
     "events": {
       "upcoming": [
@@ -48,71 +75,88 @@
           "name": "Sénat US — vote de cloture CLARITY Act",
           "date": "2026-09-15",
           "impact": 3,
-          "days": 0.6,
+          "days": 0.5,
           "score": 100.0
         },
         {
           "name": "Fed — décision FOMC",
           "date": "2026-09-16",
           "impact": 3,
-          "days": 1.6,
-          "score": 95.5
+          "days": 1.5,
+          "score": 95.8
         },
         {
           "name": "Ripple — déblocage escrow 1 Md XRP",
           "date": "2026-10-01",
           "impact": 1,
-          "days": 16.6,
+          "days": 16.5,
           "score": 0.0
         },
         {
           "name": "Fed — décision FOMC",
           "date": "2026-10-28",
           "impact": 3,
-          "days": 43.6,
+          "days": 43.5,
           "score": 0.0
         },
         {
           "name": "Ripple — déblocage escrow 1 Md XRP",
           "date": "2026-11-01",
           "impact": 1,
-          "days": 47.6,
+          "days": 47.5,
           "score": 0.0
         },
         {
           "name": "Élections de mi-mandat US",
           "date": "2026-11-03",
           "impact": 2,
-          "days": 49.6,
+          "days": 49.5,
           "score": 0.0
         }
       ]
     }
   },
   "prices": {
-    "xrp": 1.40426,
-    "btc": 78153.3
+    "xrp": 1.39739,
+    "btc": 77889.6
   },
   "buy_zone": {
     "high": 1.12,
     "low": 0.9,
-    "dist_to_high_pct": -20.2,
-    "dist_to_low_pct": -35.9,
+    "dist_to_high_pct": -19.9,
+    "dist_to_low_pct": -35.6,
     "in_zone": false
   },
   "sources": {
     "xrp": "kraken",
     "btc": "kraken",
     "funding": "okx",
-    "oi": null,
+    "oi": "okx",
+    "long_short": "okx",
+    "liquidations": "okx",
+    "dvol": "deribit",
+    "vix": "yahoo",
+    "stablecoins": "defillama",
+    "dominance": "coingecko",
     "fng": "alternative.me"
   },
   "missing": [],
   "history": [
     {
       "d": "2026-09-14",
-      "s": 24.2,
-      "p": 1.40426
+      "s": 27.7,
+      "p": 1.39739,
+      "c": {
+        "trend": 0.2,
+        "momentum": 0.0,
+        "leverage": 43.5,
+        "volatility": 7.1,
+        "liquidity": 14.2,
+        "sentiment": 18.0,
+        "events": 100.0
+      }
     }
-  ]
+  ],
+  "delta_prev_run": 3.5,
+  "delta_24h": 3.5
 }
