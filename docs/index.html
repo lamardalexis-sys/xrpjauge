@@ -59,6 +59,7 @@
   .hero .value small { font-size: 22px; color: var(--muted); font-weight: 500; margin-left: 2px; }
   .hero .zone { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; }
   .hero .zone .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--z); box-shadow: 0 0 0 2px var(--surface); }
+  .hero .delta { color: var(--muted); font-size: 13px; margin-top: 4px; font-variant-numeric: tabular-nums; }
   .hero .hint { color: var(--ink-2); font-size: 14px; margin-top: 10px; max-width: 34ch; margin-left: auto; margin-right: auto; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; margin-top: 12px; color: var(--ink-2); font-size: 12.5px; }
   .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
@@ -127,6 +128,7 @@
     <div class="hero">
       <div class="value" id="score-label"><span id="score">–</span><small>/100</small></div>
       <div class="zone" id="zone" style="--z: var(--muted)"><span class="dot"></span><span id="zone-text">–</span></div>
+      <div class="delta" id="delta"></div>
       <div class="hint" id="hint">Le score monte quand les conditions d'une capitulation se mettent en place.</div>
       <div class="legend">
         <span style="--c: var(--good)">0–30 Calme</span>
@@ -190,12 +192,15 @@
   ];
   const ZONE_COLOR = { calme: 'var(--good)', vigilance: 'var(--warning)', eleve: 'var(--serious)', critique: 'var(--critical)' };
   const NAMES = {
-    trend: ['Tendance', 'XRP et BTC face à leurs moyennes 50 et 200 jours'],
-    momentum: ['Momentum', 'Chute récente, ou hausse parabolique fragile'],
-    leverage: ['Levier', 'Funding rate et open interest des futures'],
-    sentiment: ['Sentiment', 'Indice Fear & Greed'],
+    trend: ['Tendance', 'XRP et BTC vs SMA 50/200, force relative XRP/BTC'],
+    momentum: ['Momentum & vol. réalisée', 'Chute ou hausse parabolique, expansion de volatilité, volume anormal'],
+    leverage: ['Levier', 'Funding, open interest, ratio long/short, liquidations'],
+    volatility: ['Vol. implicite & macro', 'DVOL Bitcoin (Deribit) et VIX'],
+    liquidity: ['Liquidité', 'Stablecoins, dominance BTC, flux ETF (manuel)'],
+    sentiment: ['Sentiment', 'Fear & Greed et sa variation 7 j'],
     events: ['Événements', 'Décisions binaires à moins de 14 jours'],
   };
+  const fmtN = (v, d = 2) => v == null ? '–' : Number(v).toLocaleString('fr-FR', { maximumFractionDigits: d });
 
   // Géométrie de la jauge : demi-cercle centré (160,160), rayon 110, de 180° à 0°
   const CX = 160, CY = 160, R = 110;
@@ -259,6 +264,9 @@
     setNeedle(d.score);
     $('zone').style.setProperty('--z', ZONE_COLOR[d.zone] || 'var(--muted)');
     $('zone-text').textContent = d.zone_label;
+    const dl = d.delta_24h;
+    $('delta').textContent = dl == null ? '' : (dl > 0 ? '▲ +' : dl < 0 ? '▼ ' : '● ') + fmtN(dl, 1) + ' sur 24 h';
+    $('delta').style.color = dl > 3 ? 'var(--critical)' : dl < -3 ? 'var(--good)' : 'var(--muted)';
     $('hint').textContent = {
       calme: 'Conditions normales. Le DCA continue à son rythme, rien à faire.',
       vigilance: 'Quelques ingrédients présents. Vérifie que tes ordres échelonnés sont bien placés.',
@@ -296,12 +304,38 @@
       const col = colorFor(v);
       let why = NAMES[k][1];
       const det = d.details[k] || {};
-      if (k === 'leverage' && det.funding_pct_8h != null) why += ` · funding ${det.funding_pct_8h.toLocaleString('fr-FR', { maximumFractionDigits: 4 })} %/8 h` + (det.oi_change_7d_pct != null ? `, OI 7 j ${fmtPct(det.oi_change_7d_pct)}` : '');
-      if (k === 'sentiment' && det.fear_greed != null) why += ` · F&G ${det.fear_greed}`;
+      const bits = [];
+      if (k === 'trend') {
+        if (det.xrp_vs_btc_30d_pct != null) bits.push(`XRP vs BTC 30 j ${fmtPct(det.xrp_vs_btc_30d_pct)}`);
+        if (det.xrp_btc_ratio_sats != null) bits.push(`${fmtN(det.xrp_btc_ratio_sats, 0)} sats`);
+      }
+      if (k === 'momentum') {
+        if (det.rvol_7d_pct != null) bits.push(`vol 7 j ${fmtN(det.rvol_7d_pct, 0)} % vs 30 j ${fmtN(det.rvol_30d_pct, 0)} %`);
+        if (det.volume_vs_30d != null) bits.push(`volume ×${fmtN(det.volume_vs_30d, 1)}`);
+      }
+      if (k === 'leverage') {
+        if (det.funding_pct_8h != null) bits.push(`funding ${fmtN(det.funding_pct_8h, 4)} % (moy. 7 j ${fmtN(det.funding_avg7d_pct_8h, 4)} %)`);
+        if (det.oi_change_7d_pct != null) bits.push(`OI 7 j ${fmtPct(det.oi_change_7d_pct)}`);
+        if (det.long_short_ratio != null) bits.push(`L/S ${fmtN(det.long_short_ratio, 2)}`);
+        if (det.liq_long_share_pct != null) bits.push(`liq. longs ${fmtN(det.liq_long_share_pct, 0)} %`);
+      }
+      if (k === 'volatility') {
+        if (det.btc_dvol != null) bits.push(`DVOL ${fmtN(det.btc_dvol, 0)} (moy. ${fmtN(det.btc_dvol_avg30, 0)})`);
+        if (det.vix != null) bits.push(`VIX ${fmtN(det.vix, 1)}`);
+      }
+      if (k === 'liquidity') {
+        if (det.stablecoins_7d_pct != null) bits.push(`stablecoins 7 j ${fmtPct(det.stablecoins_7d_pct)} (${fmtN(det.stablecoins_usd_bn, 0)} Md$)`);
+        if (det.btc_dominance_pct != null) bits.push(`dominance BTC ${fmtN(det.btc_dominance_pct, 1)} %`);
+        if (det.etf_weekly_flow_musd != null) bits.push(`ETF ${fmtPct(det.etf_weekly_flow_musd).replace(' %', ' M$')}/sem.`);
+      }
+      if (k === 'sentiment' && det.fear_greed != null) {
+        bits.push(`F&G ${det.fear_greed}` + (det.fear_greed_change_7d != null ? ` (7 j ${det.fear_greed_change_7d > 0 ? '+' : ''}${det.fear_greed_change_7d})` : ''));
+      }
       if (k === 'events' && det.upcoming && det.upcoming.length) {
         const nxt = det.upcoming.find((e) => e.days >= 0) || det.upcoming[0];
-        why += ` · prochain : ${nxt.name}`;
+        bits.push(`prochain : ${nxt.name}`);
       }
+      if (bits.length) why += ' · ' + bits.join(' · ');
       row.innerHTML = `
         <div><span class="name">${NAMES[k][0]}</span><span class="weight">poids ${w}</span></div>
         <div class="val ${v == null ? 'na' : ''}">${v == null ? 'n/d' : Math.round(v)}</div>
