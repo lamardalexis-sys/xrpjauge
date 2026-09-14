@@ -92,6 +92,34 @@
   .ev .when b { color: var(--ink); }
   .pill { font-size: 11.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--ink-2); margin-left: 6px; vertical-align: 1px; }
 
+  /* Graphique prix */
+  .live-chart { width: 100%; height: 520px; border-radius: 8px; overflow: hidden; }
+  @media (max-width: 640px) { .live-chart { height: 380px; } }
+  .range { float: right; display: inline-flex; gap: 4px; }
+  .range button { font: inherit; font-size: 12px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--ink-2); cursor: pointer; text-transform: none; letter-spacing: 0; }
+  .range button.on { background: var(--accent-soft); color: var(--ink); border-color: transparent; }
+  .chart-wrap { position: relative; }
+  .pchart { width: 100%; height: auto; display: block; }
+  .pchart text { font-size: 11px; fill: var(--muted); }
+  .pchart .zl { font-size: 10.5px; fill: var(--ink-2); }
+  .tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 9px; font-size: 12.5px; box-shadow: 0 2px 8px rgba(0,0,0,.12); white-space: nowrap; }
+  .tip b { font-weight: 600; }
+  .chart-legend { justify-content: flex-start; margin-top: 8px; }
+  .chart-legend .ln::before { width: 14px; height: 2px; border-radius: 1px; vertical-align: 3px; }
+
+  /* Baleines */
+  .whale { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--grid); font-size: 13.5px; }
+  .whale:first-of-type { border-top: 0; padding-top: 0; }
+  .whale .k { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; color: #fff; background: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+  .whale .k.retrait { background: var(--good); }
+  .whale .k.depot { background: var(--critical); }
+  .whale .k.interne { background: var(--muted); }
+  .whale .k.transfert { background: var(--accent); }
+  .whale .amt { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+  .whale .route { color: var(--ink-2); }
+  .whale .route b { color: var(--ink); font-weight: 600; }
+  .whale .when { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+
   /* Contexte monde */
   .h2-sub { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); margin-left: 6px; }
   .ai-summary { margin: 0 0 12px; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 6px; font-size: 14px; color: var(--ink); }
@@ -177,6 +205,33 @@
     </section>
   </div>
 
+  <section class="card" style="margin-top:14px" id="price-card">
+    <h2>Prix & zones <span class="h2-sub" id="psub">bougies en direct (Kraken)</span>
+      <span class="range" id="prange">
+        <button data-tf="60">1 h</button><button data-tf="240">4 h</button><button data-tf="1440" class="on">1 j</button>
+        <button data-tf="tv" title="Widget TradingView complet">TradingView</button>
+      </span></h2>
+    <div id="live-chart" class="live-chart"></div>
+    <div id="tv-chart" class="live-chart" hidden></div>
+    <div class="chart-wrap" id="svg-wrap" hidden>
+      <svg class="pchart" id="pchart" viewBox="0 0 800 300" role="img" aria-label="Prix XRP avec zones d'achat et de vente"></svg>
+      <div class="tip" id="ptip" hidden></div>
+    </div>
+    <div class="legend chart-legend" id="plegend"></div>
+    <div class="spark-note" id="pnote"></div>
+  </section>
+
+  <section class="card" style="margin-top:14px" id="whale-card">
+    <h2>Baleines <span class="h2-sub">transferts XRP ≥ seuil, 7 jours</span></h2>
+    <div class="grid" style="margin-top:0">
+      <div class="tile"><div class="label">Dépôts vers exchanges, 24 h</div><div class="num" id="w-dep">–</div><div class="sub">vente probable</div></div>
+      <div class="tile"><div class="label">Retraits d'exchanges, 24 h</div><div class="num" id="w-wd">–</div><div class="sub">accumulation</div></div>
+      <div class="tile"><div class="label">Flux net, 24 h</div><div class="num" id="w-net">–</div><div class="sub" id="w-net-sub">–</div></div>
+    </div>
+    <div id="whales" style="margin-top:12px"></div>
+    <div class="spark-note" id="whale-note"></div>
+  </section>
+
   <div class="grid">
     <section class="card">
       <h2>Composants du score</h2>
@@ -208,6 +263,7 @@
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -389,6 +445,11 @@
       e.appendChild(row);
     });
 
+    // Prix & zones + baleines
+    const whales = (d.details && d.details.whales) || {};
+    setupPriceCard(d.series || [], d.levels || {}, whales.log || []);
+    drawWhales(whales);
+
     // Contexte monde
     drawWorld((d.details && d.details.news) || {}, d.components && d.components.news);
 
@@ -403,6 +464,276 @@
       $('err').hidden = false;
       $('err').textContent = 'Composants indisponibles à la dernière exécution (score re-normalisé) : ' + d.missing.join(', ');
     }
+  }
+
+  // ------------------------------------------------------------------ //
+  // Graphique live : Lightweight Charts + bougies Kraken, repli SVG
+  // ------------------------------------------------------------------ //
+  let lwChart = null, lwSeries = null, lwLines = [], lwTf = '1440', lwCache = {};
+  function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+  function setupPriceCard(series, levels, wlog) {
+    const hasLib = typeof LightweightCharts !== 'undefined';
+    try { lwTf = localStorage.getItem('ptf') || '1440'; } catch (e) {}
+    const buttons = document.querySelectorAll('#prange button');
+    const show = (tf) => {
+      lwTf = tf;
+      buttons.forEach((b) => b.classList.toggle('on', b.dataset.tf === tf));
+      $('tv-chart').hidden = tf !== 'tv';
+      $('live-chart').hidden = tf === 'tv' || !hasLib;
+      $('svg-wrap').hidden = hasLib || tf === 'tv';
+      if (tf === 'tv') { mountTradingView(); $('psub').textContent = 'widget TradingView (KRAKEN:XRPUSD)'; $('plegend').innerHTML = ''; $('pnote').textContent = 'Graphique complet TradingView : indicateurs, outils de tracé, changement de paire. Les zones et baleines ne sont pas reportées ici.'; return; }
+      if (!hasLib) { $('psub').textContent = 'bougies journalières (données du bot)'; drawPrice(series.slice(-120), levels, wlog); return; }
+      $('psub').textContent = 'bougies en direct (Kraken)';
+      loadKraken(tf).then((bars) => renderLive(bars, tf, levels, wlog, 'Kraken · ' + ({ '60': '1 h', '240': '4 h', '1440': '1 j' })[tf] + ' · chargé à ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })))
+        .catch((e) => {
+          const bars = series.filter((s) => s.o != null && s.d).map((s) => ({ time: Math.floor(Date.parse(s.d + 'T00:00:00Z') / 1000), open: s.o, high: s.h, low: s.l, close: s.c }));
+          if (bars.length) renderLive(bars, '1440', levels, wlog, 'Kraken injoignable depuis le navigateur (' + e.message + ') · bougies journalières du bot');
+          else { $('live-chart').hidden = true; $('svg-wrap').hidden = false; drawPrice(series.slice(-120), levels, wlog); }
+        });
+    };
+    buttons.forEach((b) => b.addEventListener('click', () => { try { localStorage.setItem('ptf', b.dataset.tf); } catch (e) {} show(b.dataset.tf); }));
+    show(lwTf);
+  }
+
+  function loadKraken(tf) {
+    if (lwCache[tf]) return Promise.resolve(lwCache[tf]);
+    return fetch('https://api.kraken.com/0/public/OHLC?pair=XRPUSD&interval=' + tf, { cache: 'no-store' })
+      .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then((j) => {
+        if (j.error && j.error.length) throw new Error(j.error.join(', '));
+        const key = Object.keys(j.result).find((k) => k !== 'last');
+        const rows = j.result[key];
+        const bars = rows.map((r) => ({ time: Number(r[0]), open: +r[1], high: +r[2], low: +r[3], close: +r[4] }));
+        lwCache[tf] = bars; return bars;
+      });
+  }
+
+  function sma(bars, n) {
+    const out = []; let sum = 0;
+    for (let i = 0; i < bars.length; i++) { sum += bars[i].close; if (i >= n) sum -= bars[i - n].close; if (i >= n - 1) out.push({ time: bars[i].time, value: sum / n }); }
+    return out;
+  }
+
+  // Primitive Lightweight Charts : bandes de prix colorées pleine largeur (zones achat/vente)
+  function ZonesPrimitive(series, zones) {
+    this._series = series; this._zones = zones; this._chart = null;
+    this.attached = (p) => { this._chart = p.chart; };
+    this.updateAllViews = () => {};
+    const self = this;
+    const view = {
+      renderer: () => ({
+        draw: (target) => target.useBitmapCoordinateSpace((scope) => {
+          const ctx = scope.context, W = scope.bitmapSize.width, r = scope.verticalPixelRatio;
+          self._zones.forEach((z) => {
+            const y1 = self._series.priceToCoordinate(z.hi), y2 = self._series.priceToCoordinate(z.lo);
+            if (y1 == null || y2 == null) return;
+            const top = Math.min(y1, y2) * r, h = Math.max(2, Math.abs(y2 - y1) * r);
+            ctx.fillStyle = z.color; ctx.globalAlpha = z.alpha; ctx.fillRect(0, top, W, h); ctx.globalAlpha = 1;
+            ctx.fillStyle = z.text; ctx.font = `${Math.round(11 * r)}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+            ctx.textBaseline = 'top'; ctx.fillText(z.label, 8 * r, top + 4 * r);
+          });
+        }),
+      }),
+      zOrder: () => 'bottom',
+    };
+    this.paneViews = () => [view];
+  }
+
+  function renderLive(bars, tf, levels, wlog, note) {
+    const host = $('live-chart');
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light' || document.documentElement.dataset.theme === 'dark';
+    const good = cssVar('--good'), crit = cssVar('--critical'), ser = cssVar('--serious'), acc = cssVar('--accent'), warn = cssVar('--warning');
+    if (!lwChart) {
+      lwChart = LightweightCharts.createChart(host, {
+        autoSize: true,
+        layout: { background: { color: 'transparent' }, textColor: cssVar('--muted'), fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif', attributionLogo: false },
+        grid: { vertLines: { visible: false }, horzLines: { color: cssVar('--grid'), style: 1 } },
+        rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.08, bottom: 0.08 } },
+        timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false, rightOffset: 6, barSpacing: 7 },
+        crosshair: { mode: 0, vertLine: { color: cssVar('--muted'), width: 1, style: 3, labelBackgroundColor: cssVar('--ink-2') }, horzLine: { color: cssVar('--muted'), width: 1, style: 3, labelBackgroundColor: cssVar('--ink-2') } },
+        handleScale: { axisPressedMouseMove: true }, handleScroll: { vertTouchDrag: false },
+        localization: { locale: 'fr-FR', priceFormatter: (p) => p.toFixed(p < 2 ? 4 : 3) },
+      });
+      lwSeries = lwChart.addCandlestickSeries({ upColor: good, downColor: crit, borderVisible: false, wickUpColor: good, wickDownColor: crit, priceLineColor: cssVar('--ink-2'), priceLineStyle: 3 });
+      lwChart._sma50 = lwChart.addLineSeries({ color: acc, lineWidth: 1, lineStyle: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+      lwChart._sma200 = lwChart.addLineSeries({ color: warn, lineWidth: 1, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+    }
+    lwSeries.setData(bars);
+    lwChart._sma50.setData(sma(bars, 50));
+    lwChart._sma200.setData(sma(bars, 200));
+    // Zones : bandes colorées (primitive) + ligne d'invalidation
+    lwLines.forEach((l) => lwSeries.removePriceLine(l)); lwLines = [];
+    if (lwChart._zones) { lwSeries.detachPrimitive(lwChart._zones); }
+    const bz = levels.buy_zone || [];
+    const zones = [];
+    const ink2 = cssVar('--ink-2');
+    if (bz.length === 2) zones.push({ lo: bz[0], hi: bz[1], color: good, alpha: dark ? 0.22 : 0.16, text: ink2, label: `Zone d'achat ${fmtN(bz[0], 2)} – ${fmtN(bz[1], 2)} $` });
+    (levels.sell_zones || []).forEach((z) => zones.push({ lo: z[0], hi: z[1], color: ser, alpha: dark ? 0.22 : 0.16, text: ink2, label: `Vente ${fmtN(z[0], 2)} – ${fmtN(z[1], 2)} $ · ${z[2] || ''}` }));
+    lwChart._zones = new ZonesPrimitive(lwSeries, zones);
+    lwSeries.attachPrimitive(lwChart._zones);
+    if (levels.invalidation != null) lwLines.push(lwSeries.createPriceLine({ price: levels.invalidation, color: crit, lineWidth: 1, lineStyle: 1, axisLabelVisible: true, title: 'Invalidation' }));
+    // Baleines : marqueurs alignés sur la bougie
+    const step = Number(tf) * 60;
+    const times = new Set(bars.map((b) => b.time));
+    const markers = (wlog || []).map((w) => {
+      let t = Math.floor(new Date(w.ts).getTime() / 1000 / step) * step;
+      if (!times.has(t)) { t = bars.reduce((best, b) => Math.abs(b.time - t) < Math.abs(best - t) ? b.time : best, bars[0].time); }
+      const up = w.kind === 'retrait', down = w.kind === 'depot';
+      return { time: t, position: up ? 'belowBar' : 'aboveBar', color: up ? good : down ? crit : acc, shape: up ? 'arrowUp' : down ? 'arrowDown' : 'circle',
+               text: (up || down) ? fmtN(w.xrp / 1e6, 0) + ' M' : '' };
+    }).filter((m) => m.time >= bars[0].time).sort((a, b) => a.time - b.time);
+    lwSeries.setMarkers(markers);
+    lwChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, bars.length - (tf === '1440' ? 120 : tf === '240' ? 160 : 140)), to: bars.length + 6 });
+    $('plegend').innerHTML = `<span style="--c:${good}">Bougie haussière</span><span style="--c:${crit}">Bougie baissière</span><span class="ln" style="--c:${acc}">SMA 50</span><span class="ln" style="--c:${warn}">SMA 200</span><span style="--c:${good}">Zone d'achat</span><span style="--c:${ser}">Zones de vente</span><span style="--c:${crit}">Invalidation</span><span style="--c:${good}">▲ retrait baleine</span><span style="--c:${crit}">▼ dépôt baleine</span>`;
+    $('pnote').textContent = note + '. Molette = zoom, glisser = déplacer. Les SMA sont calculées sur l\'unité de temps affichée.';
+  }
+
+  let tvMounted = false;
+  function mountTradingView() {
+    if (tvMounted) return; tvMounted = true;
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light' || document.documentElement.dataset.theme === 'dark';
+    const host = $('tv-chart');
+    const wrap = document.createElement('div'); wrap.className = 'tradingview-widget-container'; wrap.style.height = '100%';
+    const inner = document.createElement('div'); inner.style.height = '100%'; wrap.appendChild(inner); host.appendChild(wrap);
+    const sc = document.createElement('script'); sc.type = 'text/javascript'; sc.async = true;
+    sc.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    sc.textContent = JSON.stringify({ autosize: true, symbol: 'KRAKEN:XRPUSD', interval: 'D', timezone: 'Europe/Paris', theme: dark ? 'dark' : 'light', style: '1', locale: 'fr', allow_symbol_change: true, hide_side_toolbar: false, withdateranges: true, studies: ['STD;SMA', 'STD;SMA'] });
+    inner.appendChild(sc);
+  }
+
+  function drawPrice(series, levels, wlog) {
+    const svg = $('pchart'); svg.innerHTML = '';
+    if (!series.length) { $('price-card').hidden = true; return; }
+    $('price-card').hidden = false;
+    const ns = 'http://www.w3.org/2000/svg';
+    const el = (tag, attrs, text) => { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; };
+    const W = 800, H = 300, L = 44, R = 10, T = 12, B = 26;
+    const pw = W - L - R, ph = H - T - B;
+    const closes = series.map((s) => s.c);
+    const hasOHLC = series.every((s) => s.o != null && s.h != null && s.l != null);
+    const highs = hasOHLC ? series.map((s) => s.h) : closes, lows = hasOHLC ? series.map((s) => s.l) : closes;
+    const bz = levels.buy_zone || [], sz = levels.sell_zones || [];
+    let lo = Math.min(...lows, bz[0] != null ? bz[0] : Infinity, levels.invalidation != null ? levels.invalidation : Infinity);
+    let hi = Math.max(...highs, ...sz.map((z) => z[1]).filter((v) => v != null && v <= Math.max(...highs) * 1.6));
+    const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
+    const x = (i) => L + (i / (series.length - 1)) * pw;
+    const y = (v) => T + (1 - (v - lo) / (hi - lo)) * ph;
+
+    // Zones
+    if (bz.length === 2) {
+      svg.appendChild(el('rect', { x: L, y: y(bz[1]), width: pw, height: Math.max(1, y(bz[0]) - y(bz[1])), fill: 'var(--good)', opacity: 0.16 }));
+      svg.appendChild(el('text', { x: L + 6, y: y(bz[1]) + 12, class: 'zl' }, `Zone d'achat ${fmtN(bz[0], 2)}–${fmtN(bz[1], 2)} $`));
+    }
+    sz.forEach((z) => {
+      if (z[1] < lo || z[0] > hi) return;
+      const y1 = y(Math.min(hi, z[1])), y0 = y(Math.max(lo, z[0]));
+      svg.appendChild(el('rect', { x: L, y: y1, width: pw, height: Math.max(2, y0 - y1), fill: 'var(--serious)', opacity: 0.16 }));
+      svg.appendChild(el('text', { x: L + 6, y: y1 + 12, class: 'zl' }, `Vente ${fmtN(z[0], 2)}–${fmtN(z[1], 2)} $ · ${z[2] || ''}`));
+    });
+    if (levels.invalidation != null) {
+      svg.appendChild(el('line', { x1: L, x2: L + pw, y1: y(levels.invalidation), y2: y(levels.invalidation), stroke: 'var(--critical)', 'stroke-width': 1.5, 'stroke-dasharray': '5 4' }));
+      svg.appendChild(el('text', { x: L + pw - 6, y: y(levels.invalidation) - 4, class: 'zl', 'text-anchor': 'end' }, `Invalidation ${fmtN(levels.invalidation, 2)} $ (clôture hebdo)`));
+    }
+    // Axe Y (4 graduations)
+    for (let k = 0; k <= 4; k++) {
+      const v = lo + (hi - lo) * k / 4;
+      svg.appendChild(el('line', { x1: L, x2: L + pw, y1: y(v), y2: y(v), stroke: 'var(--grid)', 'stroke-width': 1 }));
+      svg.appendChild(el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, fmtN(v, 2)));
+    }
+    // Axe X (mois)
+    let lastM = '';
+    series.forEach((s, i) => {
+      if (!s.d) return; const m = s.d.slice(0, 7);
+      if (m !== lastM) { lastM = m; if (i > 0) svg.appendChild(el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, new Date(s.d).toLocaleDateString('fr-FR', { month: 'short' }))); }
+    });
+    // SMA
+    const path = (key, color, dash) => {
+      const pts = series.map((s, i) => s[key] == null ? null : `${x(i).toFixed(1)},${y(s[key]).toFixed(1)}`).filter(Boolean);
+      if (pts.length > 1) svg.appendChild(el('polyline', { points: pts.join(' '), fill: 'none', stroke: color, 'stroke-width': 1.5, 'stroke-dasharray': dash || 'none', opacity: 0.9 }));
+    };
+    path('s50', 'var(--accent)', '4 3');
+    path('s200', 'var(--warning)');
+    // Prix : bougies si OHLC disponible, sinon ligne
+    if (hasOHLC) {
+      const bw = Math.max(1.5, (pw / series.length) - 1.2);  // 2 px d'écart entre bougies
+      series.forEach((s, i) => {
+        const up = s.c >= s.o, col = up ? 'var(--good)' : 'var(--critical)';
+        const cx = x(i);
+        svg.appendChild(el('line', { x1: cx, x2: cx, y1: y(s.h), y2: y(s.l), stroke: col, 'stroke-width': 1 }));
+        const top = y(Math.max(s.o, s.c)), hgt = Math.max(1, Math.abs(y(s.o) - y(s.c)));
+        svg.appendChild(el('rect', { x: cx - bw / 2, y: top, width: bw, height: hgt, fill: col, rx: 0.5 }));
+      });
+    } else {
+      svg.appendChild(el('polyline', { points: series.map((s, i) => `${x(i).toFixed(1)},${y(s.c).toFixed(1)}`).join(' '), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+    }
+    const last = series[series.length - 1];
+    svg.appendChild(el('circle', { cx: x(series.length - 1), cy: y(last.c), r: 3, fill: 'var(--ink)' }));
+    svg.appendChild(el('text', { x: L + pw - 2, y: T + 12, 'text-anchor': 'end', style: 'fill:var(--ink);font-weight:600;font-size:12px' }, 'Dernier : ' + fmtN(last.c, 3) + ' $'));
+
+    // Marqueurs baleines (triangles) sur la date du transfert
+    const idxByDay = {}; series.forEach((s, i) => { if (s.d) idxByDay[s.d] = i; });
+    const stack = {};
+    (wlog || []).slice().sort((a, b) => (a.ts || '').localeCompare(b.ts || '')).forEach((w) => {
+      const day = (w.ts || '').slice(0, 10); const i = idxByDay[day];
+      if (i == null) return;
+      const up = w.kind === 'retrait', down = w.kind === 'depot';
+      // sous la mèche basse pour un retrait, au-dessus de la mèche haute pour un dépôt
+      const py = up ? y(series[i].l != null ? series[i].l : series[i].c) : y(series[i].h != null ? series[i].h : series[i].c);
+      const col = up ? 'var(--good)' : down ? 'var(--critical)' : 'var(--accent)';
+      const key = day + (up ? 'u' : 'd'); const k = stack[key] = (stack[key] || 0) + 1;
+      const cx = x(i), cy = (up ? py + 12 : py - 12) + (up ? 1 : -1) * (k - 1) * 13;
+      const tri = up ? `${cx},${cy - 6} ${cx - 6},${cy + 5} ${cx + 6},${cy + 5}` : `${cx},${cy + 6} ${cx - 6},${cy - 5} ${cx + 6},${cy - 5}`;
+      const shape = down || up ? el('polygon', { points: tri, fill: col, stroke: 'var(--surface)', 'stroke-width': 1.5 }) : el('circle', { cx, cy: py - 12, r: 5, fill: col, stroke: 'var(--surface)', 'stroke-width': 1.5 });
+      shape.setAttribute('data-tip', `${{ retrait: 'Retrait', depot: 'Dépôt', interne: 'Interne', transfert: 'Transfert' }[w.kind]} · ${fmtN(w.xrp / 1e6, 1)} M XRP · ${w.from} → ${w.to}`);
+      svg.appendChild(shape);
+    });
+
+    // Survol : ligne + tooltip
+    const tip = $('ptip'); const guide = el('line', { y1: T, y2: T + ph, stroke: 'var(--muted)', 'stroke-width': 1, 'stroke-dasharray': '3 3' }); guide.setAttribute('visibility', 'hidden'); svg.appendChild(guide);
+    svg.addEventListener('mousemove', (ev) => {
+      const r = svg.getBoundingClientRect(); const mx = (ev.clientX - r.left) * (W / r.width);
+      const t = ev.target && ev.target.getAttribute && ev.target.getAttribute('data-tip');
+      const i = Math.round(((mx - L) / pw) * (series.length - 1));
+      if (i < 0 || i >= series.length) { guide.setAttribute('visibility', 'hidden'); tip.hidden = true; return; }
+      guide.setAttribute('x1', x(i)); guide.setAttribute('x2', x(i)); guide.setAttribute('visibility', 'visible');
+      const s = series[i];
+      const ohlc = s.o != null ? `O ${fmtN(s.o, 3)} · H ${fmtN(s.h, 3)} · L ${fmtN(s.l, 3)} · <b>C ${fmtN(s.c, 3)}</b>` : `<b>${fmtN(s.c, 4)} $</b>`;
+      tip.innerHTML = t ? t : `${s.d || ''} · ${ohlc}` + (s.s50 ? ` · SMA50 ${fmtN(s.s50, 3)}` : '') + (s.s200 ? ` · SMA200 ${fmtN(s.s200, 3)}` : '');
+      tip.hidden = false;
+      const px = (ev.clientX - r.left), py2 = (ev.clientY - r.top);
+      tip.style.left = Math.min(px + 12, r.width - tip.offsetWidth - 4) + 'px'; tip.style.top = Math.max(0, py2 - 36) + 'px';
+    });
+    svg.addEventListener('mouseleave', () => { guide.setAttribute('visibility', 'hidden'); tip.hidden = true; });
+
+    $('plegend').innerHTML = `<span style="--c:var(--good)">Bougie haussière</span><span style="--c:var(--critical)">Bougie baissière</span><span class="ln" style="--c:var(--accent)">SMA 50</span><span class="ln" style="--c:var(--warning)">SMA 200</span><span style="--c:var(--good)">Zone d'achat</span><span style="--c:var(--serious)">Zones de vente</span><span style="--c:var(--good)">▲ retrait baleine</span><span style="--c:var(--critical)">▼ dépôt baleine</span>`;
+  }
+
+  function drawWhales(w) {
+    const wrap = $('whales'); wrap.innerHTML = '';
+    if (!w || (!w.log && !w.sources)) { $('whale-card').hidden = true; return; }
+    $('whale-card').hidden = false;
+    const M = (v) => v == null ? '–' : fmtN(v / 1e6, 1) + ' M XRP';
+    $('w-dep').textContent = M(w.deposits_24h_xrp);
+    $('w-wd').textContent = M(w.withdrawals_24h_xrp);
+    const net = w.net_exchange_flow_24h_xrp;
+    $('w-net').textContent = net == null ? '–' : (net > 0 ? '+' : '') + fmtN(net / 1e6, 1) + ' M XRP';
+    $('w-net').style.color = net > 0 ? 'var(--critical)' : net < 0 ? 'var(--good)' : 'inherit';
+    $('w-net-sub').textContent = net > 0 ? 'vers les exchanges : pression vendeuse potentielle' : net < 0 ? 'hors des exchanges : accumulation' : 'équilibré';
+    const KIND = { retrait: ['retrait', 'Retrait'], depot: ['depot', 'Dépôt'], interne: ['interne', 'Interne'], transfert: ['transfert', 'Transfert'] };
+    (w.log || []).slice(0, 15).forEach((e) => {
+      const row = document.createElement('div'); row.className = 'whale';
+      const k = KIND[e.kind] || ['transfert', e.kind];
+      row.innerHTML = `<span class="k ${k[0]}">${k[1]}</span>
+        <span class="route"><b>${e.from}</b> → <b>${e.to}</b></span>
+        <span class="amt">${fmtN(e.xrp / 1e6, 1)} M XRP${e.usd ? ' · ' + fmtN(e.usd / 1e6, 1) + ' M$' : ''}</span>
+        <span class="when">${fmtDate(e.ts)}${e.price ? ' · XRP à ' + fmtN(e.price, 3) + ' $' : ''} · ${e.src}</span>`;
+      wrap.appendChild(row);
+    });
+    if (!(w.log || []).length) wrap.innerHTML = '<div class="spark-note">Aucun transfert au-dessus du seuil sur la période couverte.</div>';
+    const s = w.sources || {};
+    const th = w.thresholds || {};
+    $('whale-note').textContent = `Sources : Whale Alert ${s.whale_alert ? 'ok' : 'non configuré'} (≥ ${fmtN((th.min_usd || 0) / 1e6, 1)} M$, couverture complète) · XRP Ledger ${s.xrpl ? 'ok' : 'indisponible'} (≥ ${fmtN((th.min_xrp_ledger || 0) / 1e6, 0)} M XRP, ~10 min par heure). Retrait = achat probable, dépôt = vente probable.`;
   }
 
   function drawWorld(news, compScore) {

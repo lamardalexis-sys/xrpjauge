@@ -55,6 +55,8 @@ WEIGHTS = {
     "news": 10,        # géopolitique & news (GDELT, RSS, lexique, IA optionnelle) — voir news.py
 }
 THEMES_PATH = os.path.join(ROOT, "themes.json")
+LEVELS_PATH = os.path.join(ROOT, "levels.json")
+EXCHANGES_PATH = os.path.join(ROOT, "exchanges.json")
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; xrp-stress-gauge/2.0; +github pages)"}
 
@@ -142,17 +144,22 @@ def ohlc_kraken(pair):
     res = d["result"]
     key = [k for k in res if k != "last"][0]
     rows = res[key][-230:]
-    return {"closes": [float(r[4]) for r in rows], "volumes": [float(r[6]) for r in rows]}
+    return {"closes": [float(r[4]) for r in rows], "volumes": [float(r[6]) for r in rows],
+            "times": [int(r[0]) for r in rows],
+            "opens": [float(r[1]) for r in rows], "highs": [float(r[2]) for r in rows], "lows": [float(r[3]) for r in rows]}
 
 
 def ohlc_coingecko(coin_id):
     d = get_json(f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days=230&interval=daily")
-    return {"closes": [p[1] for p in d["prices"]], "volumes": [v[1] for v in d["total_volumes"]]}
+    return {"closes": [p[1] for p in d["prices"]], "volumes": [v[1] for v in d["total_volumes"]],
+            "times": [int(p[0] / 1000) for p in d["prices"]]}
 
 
 def ohlc_binance(symbol):
     d = get_json(f"https://api.binance.com/api/v3/klines?symbol={symbol}USDT&interval=1d&limit=230")
-    return {"closes": [float(k[4]) for k in d], "volumes": [float(k[5]) for k in d]}
+    return {"closes": [float(k[4]) for k in d], "volumes": [float(k[5]) for k in d],
+            "times": [int(k[0] / 1000) for k in d],
+            "opens": [float(k[1]) for k in d], "highs": [float(k[2]) for k in d], "lows": [float(k[3]) for k in d]}
 
 
 def fetch_ohlc(asset, verbose):
@@ -455,8 +462,11 @@ def volatility_component(dvol, vix):
     return wavg(parts), det
 
 
-def liquidity_component(stables, dominance, manual):
+def liquidity_component(stables, dominance, manual, whale_score=None):
     det, parts = {}, []
+    if whale_score is not None:
+        det["whale_flow_score"] = round(whale_score, 1)
+        parts.append((whale_score, 0.30))
     if stables and len(stables) >= 8:
         chg7 = stables[-1] / stables[-8] - 1
         # Stablecoins qui se contractent = liquidité qui sort du système
@@ -534,9 +544,16 @@ def mock_inputs():
             base = 65000 + 14000 * ((t - 0.75) / 0.25)
         btc_c.append(round(base + 800 * math.sin(i / 4.0), 2))
         btc_v.append(round(30000 + 8000 * math.sin(i / 6.0)))
+    t0 = int(datetime.now(timezone.utc).timestamp()) - 229 * 86400
+    times = [t0 + i * 86400 for i in range(230)]
+    import random
+    rnd = random.Random(7)
+    xo = [xrp_c[i - 1] if i else xrp_c[0] for i in range(230)]
+    xh = [max(xo[i], xrp_c[i]) * (1 + rnd.random() * 0.03) for i in range(230)]
+    xl = [min(xo[i], xrp_c[i]) * (1 - rnd.random() * 0.03) for i in range(230)]
     return {
-        "xrp": {"closes": xrp_c, "volumes": xrp_v},
-        "btc": {"closes": btc_c, "volumes": btc_v},
+        "xrp": {"closes": xrp_c, "volumes": xrp_v, "times": times, "opens": xo, "highs": xh, "lows": xl},
+        "btc": {"closes": btc_c, "volumes": btc_v, "times": times},
         "funding_hist": [0.0001] * 15 + [0.00012] * 6,
         "oi": [2.55e9, 2.58e9, 2.60e9, 2.63e9, 2.66e9, 2.70e9, 2.72e9, 2.75e9],
         "ls_ratio": 1.35,
@@ -587,8 +604,10 @@ def compute(inputs, events, now, verbose=False):
     comps["leverage"], details["leverage"] = leverage_component(inputs.get("funding_hist"), inputs.get("oi"), xrp_c,
                                                                 inputs.get("ls_ratio"), inputs.get("liq"))
     comps["volatility"], details["volatility"] = volatility_component(inputs.get("dvol"), inputs.get("vix"))
+    whales = inputs.get("whales") or {}
     comps["liquidity"], details["liquidity"] = liquidity_component(inputs.get("stables"), inputs.get("dominance"),
-                                                                   inputs.get("manual"))
+                                                                   inputs.get("manual"), whales.get("score"))
+    details["whales"] = whales
     comps["sentiment"], details["sentiment"] = sentiment_component(inputs.get("fng_hist"))
     comps["events"], upcoming = events_component(events, now)
     details["events"] = {"upcoming": upcoming}
@@ -613,9 +632,27 @@ def compute(inputs, events, now, verbose=False):
         log(verbose, f"  {k:10s} = {'n/d' if comps[k] is None else round(comps[k], 1)}  (poids {WEIGHTS[k]})")
     log(verbose, f"  SCORE = {score}  → {zlabel}")
 
-    # Sous-scores détaillés utiles à l'affichage
+    # Séries pour le graphique (180 derniers jours) + niveaux
+    series = []
+    if xrp_c:
+        times = (inputs["xrp"].get("times") or [])
+        opens, highs, lows = inputs["xrp"].get("opens"), inputs["xrp"].get("highs"), inputs["xrp"].get("lows")
+        n = len(xrp_c)
+        for i in range(max(0, n - 180), n):
+            d_ = datetime.fromtimestamp(times[i], tz=timezone.utc).strftime("%Y-%m-%d") if i < len(times) else None
+            series.append({"d": d_, "c": round(xrp_c[i], 4),
+                           "o": round(opens[i], 4) if opens else None,
+                           "h": round(highs[i], 4) if highs else None,
+                           "l": round(lows[i], 4) if lows else None,
+                           "s50": round(sma(xrp_c[:i + 1], 50), 4) if i + 1 >= 50 else None,
+                           "s200": round(sma(xrp_c[:i + 1], 200), 4) if i + 1 >= 200 else None})
+    levels = inputs.get("levels") or {}
+
     return {
-        "version": 3,
+        "series": series,
+        "levels": {"buy_zone": [BUY_ZONE_LOW, BUY_ZONE_HIGH], "invalidation": levels.get("invalidation"),
+                   "sell_zones": levels.get("sell_zones", [])},
+        "version": 4,
         "updated_at": now.isoformat(timespec="seconds"),
         "score": score,
         "zone": zkey,
@@ -659,9 +696,26 @@ def main():
 
     now = datetime.now(timezone.utc)
     events = load_json(EVENTS_PATH, {}).get("events", [])
+    levels = load_json(LEVELS_PATH, {})
+    exchanges = load_json(EXCHANGES_PATH, {}).get("exchanges", {})
+    global BUY_ZONE_LOW, BUY_ZONE_HIGH
+    if not os.environ.get("BUY_ZONE_LOW") and levels.get("buy_zone"):
+        BUY_ZONE_LOW, BUY_ZONE_HIGH = float(levels["buy_zone"][0]), float(levels["buy_zone"][1])
     inputs = mock_inputs() if args.mock else real_inputs(args.verbose)
+    inputs["levels"] = levels
 
     old = load_json(args.out, None)
+
+    # Baleines (module séparé ; ne bloque jamais le reste)
+    try:
+        import whales as whalemod
+        prev_log = ((old or {}).get("details", {}).get("whales", {}) or {}).get("log")
+        price_now = inputs["xrp"]["closes"][-1] if inputs.get("xrp") else None
+        inputs["whales"] = whalemod.collect_whales(now, price_now, levels, exchanges, previous_log=prev_log,
+                                                  verbose=args.verbose, mock=args.mock)
+    except Exception as e:  # noqa: BLE001
+        log(args.verbose, f"  [whales] module en échec : {e}")
+        inputs["whales"] = None
 
     # Géopolitique & news (module séparé ; ne bloque jamais le reste)
     try:

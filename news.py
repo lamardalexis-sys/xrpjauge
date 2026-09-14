@@ -63,7 +63,7 @@ def _clamp(x, lo=0.0, hi=100.0):
 # 1. GDELT
 # --------------------------------------------------------------------------- #
 GDELT_PAUSE_S = float(os.environ.get("GDELT_PAUSE_S", "6"))      # GDELT demande ≥ 5 s entre requêtes
-GDELT_RETRIES = int(os.environ.get("GDELT_RETRIES", "0"))         # réessais sur 429 (IP partagée GitHub)
+GDELT_RETRIES = int(os.environ.get("GDELT_RETRIES", "2"))         # réessais sur 429 (IP partagée GitHub)
 GDELT_VOLUME = os.environ.get("GDELT_VOLUME", "0") == "1"         # 2e requête (volume) par thème : off par défaut
 _gdelt_dead = False  # si GDELT refuse tout, on arrête d'insister pour ce run
 

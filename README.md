@@ -1,4 +1,4 @@
-# Thermomètre de stress XRP (V3)
+# Thermomètre de stress XRP (V4)
 
 Une jauge 0-100 qui monte quand les conditions d'une capitulation du marché se
 mettent en place. Mise à jour toutes les heures par GitHub Actions, affichée sur
@@ -56,6 +56,46 @@ Ce que ce composant **ne fait pas** : lire les posts de Trump ou de qui que ce
 soit directement (pas d'API), ni distinguer la posture du fait sans l'IA. Il
 capte la couverture médiatique, avec quelques heures de décalage.
 
+**GDELT depuis GitHub Actions** : l'IP partagée des runners est limitée par
+GDELT (HTTP 429 permanent). Le code le gère (réessais, puis abandon propre) ;
+la tonalité GDELT restera vide tant que le script tourne chez GitHub. Les
+titres, le lexique et l'IA suffisent au composant.
+
+### Graphique de prix et zones (V4)
+
+Sous la jauge : graphique en direct (bibliothèque Lightweight Charts de TradingView + bougies Kraken chargées par ton navigateur, 1 h / 4 h / 1 j, zoom et déplacement), SMA 50 et 200, **zone d'achat** (vert),
+**ligne d'invalidation** (clôture hebdo en dessous = thèse « fond touché »
+fausse) et **zones de vente / allègement** (orange). Tout se règle dans
+`levels.json`. Un onglet **TradingView** affiche le widget complet (indicateurs,
+outils de tracé) sans nos zones. Si Kraken est injoignable depuis le navigateur,
+le graphique retombe sur les bougies journalières collectées par le bot.
+
+### Baleines (V4)
+
+Les gros transferts XRP sont placés sur le graphique (▲ vert = retrait d'un
+exchange, ▼ rouge = dépôt vers un exchange) et listés dans le panneau
+« Baleines » avec le flux net 24 h.
+
+Ce que ça veut dire, honnêtement : sur la blockchain on ne voit pas « une
+baleine achète à 0,65 $ », on voit des transferts. Un **retrait** d'exchange
+vers un portefeuille privé est la signature la plus fiable d'un achat (on
+retire ce qu'on vient d'acheter) ; un **dépôt** vers un exchange précède
+souvent une vente. Le prix affiché est celui du run qui a détecté le transfert
+(précision : l'heure).
+
+Deux sources :
+
+- **Whale Alert** (recommandé) : compte gratuit sur whale-alert.io → clé API →
+  secret GitHub `WHALE_ALERT_KEY`. Plan gratuit : transferts ≥ 500 k$, dernière
+  heure (parfait pour un cron horaire), étiquettes d'exchanges fournies.
+- **XRP Ledger direct** (sans clé, toujours actif) : le script lit les 150
+  derniers ledgers validés (~10 minutes) via l'API publique et garde les
+  paiements ≥ 5 M XRP. Couverture partielle et étiquettes limitées à
+  `exchanges.json` (six adresses vérifiables ; ajoute-en depuis xrpscan.com).
+
+Le flux net exchanges sur 24 h entre dans le composant Liquidité (30 % de ce
+composant) : dépôts nets massifs = stress, retraits nets = apaisement.
+
 Zones : 0-30 **Calme** · 30-55 **Vigilance** · 55-75 **Stress élevé** · 75-100 **Capitulation probable**.
 
 La page affiche aussi la **variation du score sur 24 h** : c'est souvent plus
@@ -103,6 +143,9 @@ git add -A && git commit -m "…" && git push
   tu vois le chiffre passer. `null` = ignoré.
 - **`themes.json`** : les thèmes news (requêtes GDELT et Google News, poids) et
   les lexiques. Ajoute un thème si un sujet devient central (ex. une élection).
+- **`levels.json`** : zone d'achat, invalidation, zones de vente, seuils
+  baleines. C'est ici que vit ton plan.
+- **`exchanges.json`** : adresses d'exchanges pour l'étiquetage XRP Ledger.
 - **Zone d'achat** : `.github/workflows/update.yml`, variables
   `BUY_ZONE_HIGH` / `BUY_ZONE_LOW`.
 - **Pondérations et seuils** : en tête de `collect.py` (`WEIGHTS`) et dans

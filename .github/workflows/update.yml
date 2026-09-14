@@ -12,6 +12,9 @@ on:
       - "events.json"
       - "manual.json"
       - "themes.json"
+      - "whales.py"
+      - "levels.json"
+      - "exchanges.json"
       - ".github/workflows/update.yml"
 
 permissions:
@@ -42,6 +45,9 @@ jobs:
           LLM_PROVIDER: "anthropic"        # ou "openai"
           LLM_MODEL: ""                    # vide = défaut du provider (claude-haiku-4-5 / gpt-4o-mini)
           LLM_EVERY_HOURS: "3"             # appel IA au plus toutes les 3 h (cache entre-temps)
+          # Baleines : clé gratuite whale-alert.io (secret WHALE_ALERT_KEY). Sans elle, XRP Ledger direct seul.
+          WHALE_ALERT_KEY: ${{ secrets.WHALE_ALERT_KEY }}
+          XRPL_LEDGERS: "150"              # ledgers XRPL lus par run (~4 s chacun → ~10 min de couverture)
         run: python collect.py --verbose
 
       - name: Commit de docs/data.json si modifié
