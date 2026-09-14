@@ -1,0 +1,8 @@
+{
+  "_comment": "Baleines suivies (positions). Chaque run relève le solde XRP de ces comptes et conserve l'historique pour montrer accumulation / distribution sur 24 h, 7 j, 30 j. Remplis 'track' avec les adresses des plus gros comptes NON-exchange vues sur https://xrpscan.com/richlist (colonne Account ; ignore Binance, Upbit, Bitstamp, Ripple/escrow…). 'label' est libre. Si 'auto_richlist' est true, le script tente d'importer automatiquement le top du richlist via XRPScan à chaque run (en plus de ta liste) ; si cet import échoue, seule ta liste est utilisée.",
+  "auto_richlist": true,
+  "auto_top_n": 40,
+  "exclude_labels_containing": ["binance", "upbit", "bitstamp", "kraken", "bitfinex", "bithumb", "coinbase", "okx", "bybit", "huobi", "htx", "kucoin", "gate", "crypto.com", "uphold", "bitso", "bitrue", "ripple", "escrow", "gatehub", "wirex"],
+  "track": [
+  ]
+}
