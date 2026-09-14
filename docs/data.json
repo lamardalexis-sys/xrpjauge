@@ -1,8 +1,8 @@
 {
-  "updated_at": "2026-09-14T09:47:47+00:00",
-  "score": 34.2,
-  "zone": "vigilance",
-  "zone_label": "Vigilance",
+  "updated_at": "2026-09-14T09:58:48+00:00",
+  "score": 24.2,
+  "zone": "calme",
+  "zone_label": "Calme",
   "weights": {
     "trend": 25,
     "momentum": 15,
@@ -11,37 +11,36 @@
     "events": 20
   },
   "components": {
-    "trend": 23.1,
+    "trend": 0.0,
     "momentum": 0.0,
-    "leverage": 23.3,
-    "sentiment": 17.0,
+    "leverage": 6.2,
+    "sentiment": 18.0,
     "events": 100.0
   },
   "details": {
     "trend": {
       "xrp": {
-        "sma200": 1.4432,
-        "dist_sma200_pct": -5.78,
-        "sma50": 1.1479,
-        "dist_sma50_pct": 18.45
+        "sma200": 1.273,
+        "dist_sma200_pct": 10.31,
+        "sma50": 1.2277,
+        "dist_sma50_pct": 14.39
       },
       "btc": {
-        "sma200": 76662.3498,
-        "dist_sma200_pct": 3.34,
-        "sma50": 73291.9188,
-        "dist_sma50_pct": 8.09
+        "sma200": 70190.7815,
+        "dist_sma200_pct": 11.34,
+        "sma50": 71413.456,
+        "dist_sma50_pct": 9.44
       }
     },
     "momentum": {
-      "change_7d_pct": 2.31,
-      "change_30d_pct": 30.99
+      "change_7d_pct": 0.56,
+      "change_30d_pct": 40.18
     },
     "leverage": {
-      "funding_pct_8h": 0.012,
-      "oi_change_7d_pct": 7.84
+      "funding_pct_8h": 0.0073
     },
     "sentiment": {
-      "fear_greed": 62
+      "fear_greed": 57
     },
     "events": {
       "upcoming": [
@@ -57,7 +56,7 @@
           "date": "2026-09-16",
           "impact": 3,
           "days": 1.6,
-          "score": 95.4
+          "score": 95.5
         },
         {
           "name": "Ripple — déblocage escrow 1 Md XRP",
@@ -91,29 +90,29 @@
     }
   },
   "prices": {
-    "xrp": 1.3597,
-    "btc": 79220.68
+    "xrp": 1.40426,
+    "btc": 78153.3
   },
   "buy_zone": {
     "high": 1.12,
     "low": 0.9,
-    "dist_to_high_pct": -17.6,
-    "dist_to_low_pct": -33.8,
+    "dist_to_high_pct": -20.2,
+    "dist_to_low_pct": -35.9,
     "in_zone": false
   },
   "sources": {
-    "xrp": "mock",
-    "btc": "mock",
-    "funding": "mock",
-    "oi": "mock",
-    "fng": "mock"
+    "xrp": "kraken",
+    "btc": "kraken",
+    "funding": "okx",
+    "oi": null,
+    "fng": "alternative.me"
   },
   "missing": [],
   "history": [
     {
       "d": "2026-09-14",
-      "s": 34.2,
-      "p": 1.3597
+      "s": 24.2,
+      "p": 1.40426
     }
   ]
 }
