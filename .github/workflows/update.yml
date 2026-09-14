@@ -39,7 +39,7 @@ jobs:
           # Classification IA des titres (optionnelle). Crée le secret LLM_API_KEY dans
           # Settings → Secrets and variables → Actions. Sans secret, le lexique seul est utilisé.
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-          LLM_PROVIDER: "anthropic"        # ou "openai"
+          LLM_PROVIDER: "openai"        # ou "openai"
           LLM_MODEL: ""                    # vide = défaut du provider (claude-haiku-4-5 / gpt-4o-mini)
           LLM_EVERY_HOURS: "3"             # appel IA au plus toutes les 3 h (cache entre-temps)
         run: python collect.py --verbose
