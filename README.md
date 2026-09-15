@@ -70,6 +70,17 @@ fausse) et **zones de vente / allègement** (orange). Tout se règle dans
 outils de tracé) sans nos zones. Si Kraken est injoignable depuis le navigateur,
 le graphique retombe sur les bougies journalières collectées par le bot.
 
+### Signal de confluence « 3 indices » (V4)
+
+Sous le graphique, un bandeau donne l'état de trois indicateurs calculés sur
+l'unité de temps affichée : **tendance** (prix vs EMA 20/50), **momentum**
+(RSI 14 : > 55 haussier, < 45 baissier) et **force** (histogramme MACD 12/26/9,
+signe et pente). Un triangle **bleu** sous la bougie apparaît quand les trois
+basculent haussiers ensemble, un triangle **rouge** au-dessus quand les trois
+basculent baissiers ; il faut repasser par le neutre pour qu'un nouveau signal
+soit émis. C'est un filtre de confluence : peu de signaux, peu de faux
+positifs, mais un retard inhérent. Une confirmation, jamais une prédiction.
+
 ### Baleines (V4)
 
 Les gros transferts XRP sont placés sur le graphique (▲ vert = retrait d'un
@@ -88,13 +99,36 @@ Deux sources :
 - **Whale Alert** (recommandé) : compte gratuit sur whale-alert.io → clé API →
   secret GitHub `WHALE_ALERT_KEY`. Plan gratuit : transferts ≥ 500 k$, dernière
   heure (parfait pour un cron horaire), étiquettes d'exchanges fournies.
-- **XRP Ledger direct** (sans clé, toujours actif) : le script lit les 150
-  derniers ledgers validés (~10 minutes) via l'API publique et garde les
-  paiements ≥ 5 M XRP. Couverture partielle et étiquettes limitées à
+- **XRP Ledger direct** (sans clé, toujours actif) : le script lit les 450
+  derniers ledgers validés (~30 minutes, en parallèle, 90 s max) via l'API publique et garde les
+  paiements ≥ 1 M XRP. Couverture partielle et étiquettes limitées à
   `exchanges.json` (six adresses vérifiables ; ajoute-en depuis xrpscan.com).
 
 Le flux net exchanges sur 24 h entre dans le composant Liquidité (30 % de ce
 composant) : dépôts nets massifs = stress, retraits nets = apaisement.
+
+### Baleines positionnées (V4)
+
+Le panneau « Baleines positionnées » suit le **solde** d'une liste de gros
+portefeuilles, relevé à chaque run sur le XRP Ledger, et affiche la variation
+sur 24 h, 7 j et 30 j (vert = accumulation, rouge = distribution) avec une
+mini-courbe par portefeuille et le total. C'est la réponse à « qui s'est déjà
+positionné » : une baleine dont le solde monte semaine après semaine accumule.
+
+La liste vit dans `whales.json` :
+
+- `auto_richlist: true` : le script tente d'importer le classement des plus gros
+  comptes via XRPScan à chaque run (endpoint non garanti : si l'import échoue, la
+  page l'indique et seule ta liste est utilisée).
+- `track` : tes adresses. Va sur https://xrpscan.com/richlist, ignore les
+  exchanges (Binance, Upbit, Bitstamp…) et Ripple/escrow, copie les adresses des
+  gros comptes privés dans `track` avec un `label` libre. Dix minutes, une fois.
+- `exclude_labels_containing` : les étiquettes d'exchanges à écarter.
+
+L'historique se construit au fil des runs : 24 h dès le lendemain, 7 j au bout
+d'une semaine, 30 j au bout d'un mois. Un gros portefeuille non étiqueté peut
+être un fonds, un custodian ou un escrow : le lien vers XRPScan permet de
+vérifier.
 
 Zones : 0-30 **Calme** · 30-55 **Vigilance** · 55-75 **Stress élevé** · 75-100 **Capitulation probable**.
 

@@ -107,6 +107,17 @@
   .chart-legend { justify-content: flex-start; margin-top: 8px; }
   .chart-legend .ln::before { width: 14px; height: 2px; border-radius: 1px; vertical-align: 3px; }
 
+  /* Signal de confluence */
+  .signal { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--page); }
+  .sig-main { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .sig-badge { font-weight: 700; font-size: 13px; padding: 3px 10px; border-radius: 999px; color: #fff; background: var(--muted); letter-spacing: .02em; }
+  .sig-badge.bull { background: var(--accent); } .sig-badge.bear { background: var(--critical); }
+  .sig-text { color: var(--ink-2); font-size: 13.5px; }
+  .sig-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .chip { font-size: 12.5px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--ink-2); background: var(--surface); }
+  .chip b { color: var(--ink); font-weight: 600; } .chip i { font-style: normal; font-weight: 600; }
+  .chip.bull i { color: var(--accent); } .chip.bear i { color: var(--critical); } .chip.flat i { color: var(--muted); }
+
   /* Baleines */
   .whale { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--grid); font-size: 13.5px; }
   .whale:first-of-type { border-top: 0; padding-top: 0; }
@@ -119,6 +130,20 @@
   .whale .route { color: var(--ink-2); }
   .whale .route b { color: var(--ink); font-weight: 600; }
   .whale .when { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+
+  /* Positions baleines */
+  .tablewrap { overflow-x: auto; }
+  table.pos { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.pos th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--grid); }
+  table.pos td { padding: 7px 8px; border-bottom: 1px solid var(--grid); vertical-align: middle; }
+  table.pos .r { text-align: right; font-variant-numeric: tabular-nums; }
+  table.pos .addr { color: var(--muted); font-size: 11.5px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  table.pos .addr a { color: inherit; text-decoration: none; }
+  table.pos .up { color: #006300; font-weight: 600; }
+  table.pos .down { color: var(--critical); font-weight: 600; }
+  :root[data-theme="dark"] table.pos .up { color: var(--good); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) table.pos .up { color: var(--good); } }
+  table.pos svg { width: 90px; height: 24px; display: block; }
 
   /* Contexte monde */
   .h2-sub { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); margin-left: 6px; }
@@ -217,6 +242,14 @@
       <svg class="pchart" id="pchart" viewBox="0 0 800 300" role="img" aria-label="Prix XRP avec zones d'achat et de vente"></svg>
       <div class="tip" id="ptip" hidden></div>
     </div>
+    <div class="signal" id="signal" hidden>
+      <div class="sig-main"><span class="sig-badge" id="sig-badge">–</span><span class="sig-text" id="sig-text"></span></div>
+      <div class="sig-row">
+        <span class="chip" id="sig-trend"><b>Tendance</b> EMA 20/50 · <i>–</i></span>
+        <span class="chip" id="sig-rsi"><b>Momentum</b> RSI 14 · <i>–</i></span>
+        <span class="chip" id="sig-macd"><b>Force</b> MACD 12/26/9 · <i>–</i></span>
+      </div>
+    </div>
     <div class="legend chart-legend" id="plegend"></div>
     <div class="spark-note" id="pnote"></div>
   </section>
@@ -230,6 +263,19 @@
     </div>
     <div id="whales" style="margin-top:12px"></div>
     <div class="spark-note" id="whale-note"></div>
+  </section>
+
+  <section class="card" style="margin-top:14px" id="pos-card">
+    <h2>Baleines positionnées <span class="h2-sub">soldes des plus gros portefeuilles suivis</span></h2>
+    <div class="grid" style="margin-top:0">
+      <div class="tile"><div class="label">Portefeuilles suivis</div><div class="num" id="p-n">–</div><div class="sub" id="p-n-sub">–</div></div>
+      <div class="tile"><div class="label">Variation nette, 7 j</div><div class="num" id="p-7">–</div><div class="sub" id="p-7-sub">–</div></div>
+      <div class="tile"><div class="label">Variation nette, 30 j</div><div class="num" id="p-30">–</div><div class="sub" id="p-30-sub">–</div></div>
+    </div>
+    <div class="tablewrap" style="margin-top:12px">
+      <table class="pos" id="pos-table"><thead><tr><th>Portefeuille</th><th class="r">Solde</th><th class="r">24 h</th><th class="r">7 j</th><th class="r">30 j</th><th>Tendance</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="spark-note" id="pos-note"></div>
   </section>
 
   <div class="grid">
@@ -449,6 +495,7 @@
     const whales = (d.details && d.details.whales) || {};
     setupPriceCard(d.series || [], d.levels || {}, whales.log || []);
     drawWhales(whales);
+    drawPositions(whales.positions || null);
 
     // Contexte monde
     drawWorld((d.details && d.details.news) || {}, d.components && d.components.news);
@@ -507,6 +554,38 @@
         const bars = rows.map((r) => ({ time: Number(r[0]), open: +r[1], high: +r[2], low: +r[3], close: +r[4] }));
         lwCache[tf] = bars; return bars;
       });
+  }
+
+  function ema(vals, n) { const k = 2 / (n + 1); const out = []; let e = null; vals.forEach((v) => { e = e == null ? v : v * k + e * (1 - k); out.push(e); }); return out; }
+  function rsi(vals, n) {
+    const out = new Array(vals.length).fill(null); let g = 0, l = 0;
+    for (let i = 1; i < vals.length; i++) {
+      const d = vals[i] - vals[i - 1];
+      if (i <= n) { g += Math.max(d, 0); l += Math.max(-d, 0); if (i === n) { g /= n; l /= n; out[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l); } }
+      else { g = (g * (n - 1) + Math.max(d, 0)) / n; l = (l * (n - 1) + Math.max(-d, 0)) / n; out[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l); }
+    }
+    return out;
+  }
+  // Confluence : +1/-1/0 par indicateur, marqueur quand la somme atteint ±3 pour la première fois
+  function confluence(bars) {
+    const c = bars.map((b) => b.close);
+    const e20 = ema(c, 20), e50 = ema(c, 50), r = rsi(c, 14);
+    const e12 = ema(c, 12), e26 = ema(c, 26); const macd = c.map((_, i) => e12[i] - e26[i]); const sig = ema(macd, 9); const hist = macd.map((m, i) => m - sig[i]);
+    const states = bars.map((b, i) => {
+      if (i < 50) return null;
+      const t = (b.close > e50[i] && e20[i] > e50[i]) ? 1 : (b.close < e50[i] && e20[i] < e50[i]) ? -1 : 0;
+      const m = r[i] == null ? 0 : r[i] > 55 ? 1 : r[i] < 45 ? -1 : 0;
+      const f = (hist[i] > 0 && hist[i] > hist[i - 1]) ? 1 : (hist[i] < 0 && hist[i] < hist[i - 1]) ? -1 : 0;
+      return { t, m, f, sum: t + m + f, rsi: r[i], hist: hist[i], e20: e20[i], e50: e50[i] };
+    });
+    const markers = []; let prev = 0;
+    states.forEach((st, i) => {
+      if (!st) return;
+      const full = st.sum === 3 ? 1 : st.sum === -3 ? -1 : 0;
+      if (full !== 0 && full !== prev) markers.push({ time: bars[i].time, dir: full });
+      if (full !== 0) prev = full; else if (Math.abs(st.sum) <= 1) prev = 0; // il faut repasser par le neutre pour re-signaler
+    });
+    return { states, markers, last: states[states.length - 1] };
   }
 
   function sma(bars, n) {
@@ -580,13 +659,42 @@
       let t = Math.floor(new Date(w.ts).getTime() / 1000 / step) * step;
       if (!times.has(t)) { t = bars.reduce((best, b) => Math.abs(b.time - t) < Math.abs(best - t) ? b.time : best, bars[0].time); }
       const up = w.kind === 'retrait', down = w.kind === 'depot';
-      return { time: t, position: up ? 'belowBar' : 'aboveBar', color: up ? good : down ? crit : acc, shape: up ? 'arrowUp' : down ? 'arrowDown' : 'circle',
-               text: (up || down) ? fmtN(w.xrp / 1e6, 0) + ' M' : '' };
-    }).filter((m) => m.time >= bars[0].time).sort((a, b) => a.time - b.time);
+      return { time: t, position: up ? 'belowBar' : 'aboveBar', color: up ? good : down ? crit : acc, shape: 'circle', size: 1.4,
+               text: (up ? 'R ' : down ? 'D ' : 'T ') + fmtN(w.xrp / 1e6, 0) + ' M' };
+    }).filter((m) => m.time >= bars[0].time);
+    // Signal de confluence (3 indices)
+    const conf = confluence(bars);
+    conf.markers.forEach((m) => markers.push({ time: m.time, position: m.dir > 0 ? 'belowBar' : 'aboveBar', color: m.dir > 0 ? acc : crit, shape: m.dir > 0 ? 'arrowUp' : 'arrowDown', text: '3/3' }));
+    markers.sort((a, b) => a.time - b.time);
     lwSeries.setMarkers(markers);
+    renderSignal(conf, bars, tf);
     lwChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, bars.length - (tf === '1440' ? 120 : tf === '240' ? 160 : 140)), to: bars.length + 6 });
-    $('plegend').innerHTML = `<span style="--c:${good}">Bougie haussière</span><span style="--c:${crit}">Bougie baissière</span><span class="ln" style="--c:${acc}">SMA 50</span><span class="ln" style="--c:${warn}">SMA 200</span><span style="--c:${good}">Zone d'achat</span><span style="--c:${ser}">Zones de vente</span><span style="--c:${crit}">Invalidation</span><span style="--c:${good}">▲ retrait baleine</span><span style="--c:${crit}">▼ dépôt baleine</span>`;
+    $('plegend').innerHTML = `<span style="--c:${good}">Bougie haussière</span><span style="--c:${crit}">Bougie baissière</span><span class="ln" style="--c:${acc}">SMA 50</span><span class="ln" style="--c:${warn}">SMA 200</span><span style="--c:${good}">Zone d'achat</span><span style="--c:${ser}">Zones de vente</span><span style="--c:${crit}">Invalidation</span><span style="--c:${acc}">▲ signal 3/3 haussier</span><span style="--c:${crit}">▼ signal 3/3 baissier</span><span style="--c:${good}">● R = retrait baleine</span><span style="--c:${crit}">● D = dépôt baleine</span>`;
     $('pnote').textContent = note + '. Molette = zoom, glisser = déplacer. Les SMA sont calculées sur l\'unité de temps affichée.';
+  }
+
+  function renderSignal(conf, bars, tf) {
+    const box = $('signal'); const st = conf.last;
+    if (!st) { box.hidden = true; return; }
+    box.hidden = false;
+    const lab = (v, bull, bear) => v > 0 ? ['bull', bull] : v < 0 ? ['bear', bear] : ['flat', 'neutre'];
+    const set = (id, v, detail, bull, bear) => { const el = $(id); const [cls, txt] = lab(v, bull, bear); el.className = 'chip ' + cls; el.querySelector('i').textContent = txt + (detail ? ' (' + detail + ')' : ''); };
+    set('sig-trend', st.t, `EMA20 ${fmtN(st.e20, 3)} / EMA50 ${fmtN(st.e50, 3)}`, 'haussier', 'baissier');
+    set('sig-rsi', st.m, `RSI ${fmtN(st.rsi, 0)}`, 'haussier', 'baissier');
+    set('sig-macd', st.f, `hist. ${st.hist > 0 ? '+' : ''}${fmtN(st.hist, 4)}`, 'haussier', 'baissier');
+    const badge = $('sig-badge'); const n = Math.abs(st.sum);
+    const bullCount = [st.t, st.m, st.f].filter((v) => v > 0).length, bearCount = [st.t, st.m, st.f].filter((v) => v < 0).length;
+    badge.className = 'sig-badge ' + (bullCount === 3 ? 'bull' : bearCount === 3 ? 'bear' : '');
+    badge.textContent = bullCount === 3 ? '3/3 HAUSSIER' : bearCount === 3 ? '3/3 BAISSIER' : `${Math.max(bullCount, bearCount)}/3 ${bullCount > bearCount ? 'haussier' : bearCount > bullCount ? 'baissier' : 'indécis'}`;
+    const last = conf.markers[conf.markers.length - 1];
+    const unit = { '60': 'h', '240': '×4 h', '1440': 'j' }[tf] || '';
+    let txt = '';
+    if (last) {
+      const idx = bars.findIndex((b) => b.time === last.time); const since = bars.length - 1 - idx;
+      const when = new Date(last.time * 1000).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: tf === '1440' ? undefined : '2-digit', minute: tf === '1440' ? undefined : '2-digit', timeZone: 'Europe/Paris' });
+      txt = `Dernier signal complet : ${last.dir > 0 ? 'haussier ▲' : 'baissier ▼'} le ${when}, il y a ${since} bougie${since > 1 ? 's' : ''} (${unit}).`;
+    } else txt = 'Aucun signal complet sur la période chargée.';
+    $('sig-text').textContent = txt + ' Un triangle n\'apparaît que quand les trois indices basculent ensemble ; c\'est une confirmation, pas une prédiction.';
   }
 
   let tvMounted = false;
@@ -733,7 +841,45 @@
     if (!(w.log || []).length) wrap.innerHTML = '<div class="spark-note">Aucun transfert au-dessus du seuil sur la période couverte.</div>';
     const s = w.sources || {};
     const th = w.thresholds || {};
-    $('whale-note').textContent = `Sources : Whale Alert ${s.whale_alert ? 'ok' : 'non configuré'} (≥ ${fmtN((th.min_usd || 0) / 1e6, 1)} M$, couverture complète) · XRP Ledger ${s.xrpl ? 'ok' : 'indisponible'} (≥ ${fmtN((th.min_xrp_ledger || 0) / 1e6, 0)} M XRP, ~10 min par heure). Retrait = achat probable, dépôt = vente probable.`;
+    $('whale-note').textContent = `Sources : Whale Alert ${s.whale_alert ? 'ok' : 'non configuré'} (≥ ${fmtN((th.min_usd || 0) / 1e6, 1)} M$, couverture complète) · XRP Ledger ${s.xrpl ? 'ok' : 'indisponible'} (≥ ${fmtN((th.min_xrp_ledger || 0) / 1e6, 0)} M XRP, couverture partielle). Retrait = achat probable, dépôt = vente probable.`;
+  }
+
+  function drawPositions(p) {
+    const card = $('pos-card');
+    if (!p) { card.hidden = true; return; }
+    card.hidden = false;
+    const tb = $('pos-table').querySelector('tbody'); tb.innerHTML = '';
+    const M = (v, sign) => v == null ? '–' : (sign && v > 0 ? '+' : '') + fmtN(v / 1e6, v != null && Math.abs(v) < 1e6 ? 2 : 1) + ' M';
+    const cls = (v) => v == null ? '' : v > 0 ? 'up' : v < 0 ? 'down' : '';
+    $('p-n').textContent = p.tracked || 0;
+    $('p-n-sub').textContent = p.total_xrp ? `${fmtN(p.total_xrp / 1e9, 2)} Md XRP au total` : (p.auto_richlist === false ? 'import automatique indisponible : remplis whales.json' : '–');
+    $('p-7').textContent = M(p.total_chg_7d, true) + (p.total_chg_7d != null ? ' XRP' : '');
+    $('p-7').className = 'num ' + cls(p.total_chg_7d);
+    $('p-7-sub').textContent = p.accumulating_7d != null ? `${p.accumulating_7d} accumulent · ${p.distributing_7d} distribuent` : 'historique en construction';
+    $('p-30').textContent = M(p.total_chg_30d, true) + (p.total_chg_30d != null ? ' XRP' : '');
+    $('p-30').className = 'num ' + cls(p.total_chg_30d);
+    $('p-30-sub').textContent = p.total_chg_30d == null ? 'disponible après 30 jours de relevés' : 'somme des variations de solde';
+    (p.accounts || []).slice(0, 40).forEach((a) => {
+      const tr = document.createElement('tr');
+      const h = a.history || [];
+      let spark = '';
+      if (h.length >= 2) {
+        const vals = h.map((x) => x.b), lo = Math.min(...vals), hi = Math.max(...vals);
+        const pts = vals.map((v, i) => `${(i / (vals.length - 1) * 88 + 1).toFixed(1)},${(23 - (hi === lo ? 0.5 : (v - lo) / (hi - lo)) * 22).toFixed(1)}`).join(' ');
+        const col = vals[vals.length - 1] >= vals[0] ? 'var(--good)' : 'var(--critical)';
+        spark = `<svg viewBox="0 0 90 24" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+      }
+      const short = a.address.slice(0, 6) + '…' + a.address.slice(-4);
+      tr.innerHTML = `<td>${a.label ? `<div>${a.label}</div>` : ''}<div class="addr"><a href="https://xrpscan.com/account/${a.address}" target="_blank" rel="noopener">${short}</a></div></td>
+        <td class="r">${a.balance == null ? '–' : fmtN(a.balance / 1e6, 1) + ' M'}</td>
+        <td class="r ${cls(a.chg_1d)}">${M(a.chg_1d, true)}</td>
+        <td class="r ${cls(a.chg_7d)}">${M(a.chg_7d, true)}</td>
+        <td class="r ${cls(a.chg_30d)}">${M(a.chg_30d, true)}</td>
+        <td>${spark}</td>`;
+      tb.appendChild(tr);
+    });
+    if (!(p.accounts || []).length) tb.innerHTML = '<tr><td colspan="6" class="spark-note">Aucun portefeuille suivi. Ajoute des adresses dans whales.json (voir README).</td></tr>';
+    $('pos-note').textContent = 'Soldes relevés sur le XRP Ledger à chaque run ; les variations se construisent jour après jour (24 h dès demain, 7 j dans une semaine). Vert = accumulation, rouge = distribution. Un portefeuille peut aussi être un fonds, un custodian ou un escrow non étiqueté : clique l\'adresse pour vérifier sur XRPScan.' + (p.auto_richlist ? ' Liste : whales.json + import automatique XRPScan.' : ' Liste : whales.json (import automatique indisponible).');
   }
 
   function drawWorld(news, compScore) {

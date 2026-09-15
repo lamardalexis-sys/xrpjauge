@@ -24,6 +24,7 @@ import json
 import os
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -31,7 +32,9 @@ from datetime import datetime, timezone, timedelta
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; xrp-stress-gauge/4.0; +github pages)"}
 XRPL_RPC = os.environ.get("XRPL_RPC", "https://xrplcluster.com/")
-XRPL_LEDGERS = int(os.environ.get("XRPL_LEDGERS", "150"))   # ~10 min de ledgers par run
+XRPL_LEDGERS = int(os.environ.get("XRPL_LEDGERS", "450"))   # ~30 min de ledgers par run
+XRPL_WORKERS = int(os.environ.get("XRPL_WORKERS", "8"))     # requêtes en parallèle
+XRPL_BUDGET_S = float(os.environ.get("XRPL_BUDGET_S", "90"))  # temps max consacré au scan
 
 
 def _log(verbose, *a):
@@ -122,15 +125,26 @@ def xrpl_scan(now, min_xrp, exchanges, verbose=False, max_ledgers=None):
         _log(verbose, f"  [whales] xrpl échec (ledger validé) : {e}")
         return None
     out, scanned, errors = [], 0, 0
-    for idx in range(top_idx, top_idx - n, -1):
-        try:
-            res = _rpc("ledger", {"ledger_index": idx, "transactions": True, "expand": True})
-        except Exception as e:  # noqa: BLE001
-            errors += 1
-            if errors >= 5:
-                _log(verbose, f"  [whales] xrpl : trop d'erreurs, arrêt ({e})")
+    t0 = time.time()
+    indexes = list(range(top_idx, top_idx - n, -1))
+
+    def fetch(idx):
+        return _rpc("ledger", {"ledger_index": idx, "transactions": True, "expand": True}, timeout=20)
+
+    results = []
+    with ThreadPoolExecutor(max_workers=XRPL_WORKERS) as pool:
+        futures = {pool.submit(fetch, idx): idx for idx in indexes}
+        for fut in as_completed(futures):
+            if time.time() - t0 > XRPL_BUDGET_S:
+                _log(verbose, f"  [whales] xrpl : budget de {XRPL_BUDGET_S:.0f} s atteint, arrêt du scan")
+                for f in futures:
+                    f.cancel()
                 break
-            continue
+            try:
+                results.append(fut.result())
+            except Exception:  # noqa: BLE001
+                errors += 1
+    for res in results:
         ledger = res.get("ledger", {})
         close_time = ledger.get("close_time")
         # close_time XRPL = secondes depuis le 1er janvier 2000
@@ -160,7 +174,8 @@ def xrpl_scan(now, min_xrp, exchanges, verbose=False, max_ledgers=None):
                 "src": "xrpl",
             })
         scanned += 1
-    _log(verbose, f"  [whales] xrpl ok : {scanned} ledgers lus, {len(out)} paiement(s) ≥ {int(min_xrp):,} XRP".replace(",", " "))
+    _log(verbose, f"  [whales] xrpl ok : {scanned} ledgers lus en {time.time() - t0:.0f} s ({errors} erreurs), "
+                  f"{len(out)} paiement(s) ≥ {int(min_xrp):,} XRP".replace(",", " "))
     return out
 
 
@@ -243,3 +258,148 @@ def _mock(now):
         e(30.0, 60_000_000, 84_000_000, "inconnu", "Binance", "depot"),
         e(50.0, 18_000_000, 25_000_000, "Kraken", "inconnu", "retrait"),
     ]
+
+
+# --------------------------------------------------------------------------- #
+# 3. Positions : baleines déjà en place (soldes suivis dans le temps)
+# --------------------------------------------------------------------------- #
+XRPSCAN = "https://api.xrpscan.com/api/v1"
+
+
+def _xrpscan_richlist(top_n, verbose=False):
+    """Tente d'importer le classement des plus gros comptes via XRPScan.
+    L'endpoint n'est pas documenté officiellement : on essaie deux formes et on
+    accepte plusieurs formats de réponse. Renvoie [{address, label, balance}] ou None."""
+    for url in (f"{XRPSCAN}/richlist?limit={top_n}", f"{XRPSCAN}/richlist"):
+        try:
+            d = _get(url, timeout=25)
+        except Exception as e:  # noqa: BLE001
+            _log(verbose, f"  [positions] richlist {url.split('/')[-1]} échec : {e}")
+            continue
+        rows = d if isinstance(d, list) else (d.get("accounts") or d.get("data") or d.get("richlist") or [])
+        out = []
+        for r in rows[: top_n * 2]:
+            if not isinstance(r, dict):
+                continue
+            addr = r.get("account") or r.get("address") or r.get("Account")
+            if not addr:
+                continue
+            bal = r.get("balance") or r.get("Balance") or r.get("xrp")
+            try:
+                bal = float(bal)
+                if bal > 1e11:  # drops
+                    bal /= 1e6
+            except Exception:  # noqa: BLE001
+                bal = None
+            name = r.get("name") or (r.get("accountName") or {}).get("name") if isinstance(r.get("accountName"), dict) else r.get("accountName")
+            out.append({"address": addr, "label": name or "", "balance": bal})
+        if out:
+            _log(verbose, f"  [positions] richlist ok via XRPScan : {len(out)} comptes")
+            return out
+    return None
+
+
+def _xrpscan_label(addr):
+    d = _get(f"{XRPSCAN}/account/{addr}", timeout=15)
+    an = d.get("accountName") or {}
+    if isinstance(an, dict):
+        parts = [an.get("name"), an.get("desc")]
+        return " · ".join(p for p in parts if p) or None
+    return None
+
+
+def _xrpl_balance(addr):
+    res = _rpc("account_info", {"account": addr, "ledger_index": "validated"}, timeout=15)
+    data = res.get("account_data") or {}
+    return int(data["Balance"]) / 1e6 if "Balance" in data else None
+
+
+def track_positions(now, cfg, previous, verbose=False, mock=False):
+    """cfg = contenu de whales.json ; previous = details.whales.positions du run précédent."""
+    prev = {p["address"]: p for p in ((previous or {}).get("accounts") or [])}
+    excl = [x.lower() for x in cfg.get("exclude_labels_containing", [])]
+    tracked = {t["address"]: {"address": t["address"], "label": t.get("label", "")} for t in cfg.get("track", []) if t.get("address")}
+
+    auto_ok = None
+    if mock:
+        for i in range(1, 9):
+            a = f"rMockWhale{i:02d}xxxxxxxxxxxxxxxxxxxx"
+            tracked[a] = {"address": a, "label": f"Baleine #{i}"}
+        auto_ok = True
+    elif cfg.get("auto_richlist"):
+        rl = _xrpscan_richlist(int(cfg.get("auto_top_n", 40)), verbose)
+        auto_ok = rl is not None
+        for r in rl or []:
+            lab = (r.get("label") or "").lower()
+            if any(x in lab for x in excl):
+                continue
+            tracked.setdefault(r["address"], {"address": r["address"], "label": r.get("label") or ""})
+            if r.get("balance") and "balance_hint" not in tracked[r["address"]]:
+                tracked[r["address"]]["balance_hint"] = r["balance"]
+
+    if not tracked:
+        _log(verbose, "  [positions] aucune baleine à suivre (whales.json vide et richlist indisponible)")
+        return {"accounts": [], "auto_richlist": auto_ok, "tracked": 0, "updated_at": now.isoformat(timespec="seconds")}
+
+    day = now.strftime("%Y-%m-%d")
+    accounts = []
+
+    def one(t):
+        addr = t["address"]
+        if mock:
+            import random
+            rnd = random.Random(addr + day)
+            base = 50e6 + (hash(addr) % 400) * 1e6
+            bal = base * (1 + rnd.uniform(-0.03, 0.05))
+            label = t["label"]
+        else:
+            try:
+                bal = _xrpl_balance(addr)
+            except Exception as e:  # noqa: BLE001
+                _log(verbose, f"  [positions] {addr[:8]}… solde échec : {e}")
+                bal = None
+            label = t.get("label") or prev.get(addr, {}).get("label") or ""
+            if not label:
+                try:
+                    label = _xrpscan_label(addr) or ""
+                except Exception:  # noqa: BLE001
+                    label = ""
+        return addr, label, bal
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for addr, label, bal in pool.map(one, list(tracked.values())):
+            lab_l = (label or "").lower()
+            if any(x in lab_l for x in excl):
+                continue  # exchange détecté via l'étiquette : on ne le suit pas comme baleine
+            hist = list(prev.get(addr, {}).get("history") or [])
+            if bal is not None:
+                hist = [h for h in hist if h.get("d") != day]
+                hist.append({"d": day, "b": round(bal)})
+                hist = hist[-180:]
+            cur = bal if bal is not None else (hist[-1]["b"] if hist else None)
+
+            def chg(days):
+                cutoff = (now - timedelta(days=days)).strftime("%Y-%m-%d")
+                older = [h for h in hist if h["d"] <= cutoff]
+                if not older or cur is None:
+                    return None
+                return round(cur - older[-1]["b"])
+            accounts.append({
+                "address": addr, "label": label or "", "balance": None if cur is None else round(cur),
+                "chg_1d": chg(1), "chg_7d": chg(7), "chg_30d": chg(30), "history": hist,
+            })
+
+    accounts.sort(key=lambda a: -(a["balance"] or 0))
+    accounts = accounts[:60]
+    tot = sum(a["balance"] or 0 for a in accounts)
+    tot7 = sum(a["chg_7d"] or 0 for a in accounts if a["chg_7d"] is not None)
+    tot30 = sum(a["chg_30d"] or 0 for a in accounts if a["chg_30d"] is not None)
+    acc7 = sum(1 for a in accounts if (a["chg_7d"] or 0) > 0)
+    dist7 = sum(1 for a in accounts if (a["chg_7d"] or 0) < 0)
+    _log(verbose, f"  [positions] {len(accounts)} baleines suivies, total {tot/1e6:.0f} M XRP, 7 j {tot7/1e6:+.1f} M")
+    return {
+        "accounts": accounts, "tracked": len(accounts), "auto_richlist": auto_ok,
+        "total_xrp": round(tot), "total_chg_7d": round(tot7), "total_chg_30d": round(tot30),
+        "accumulating_7d": acc7, "distributing_7d": dist7,
+        "updated_at": now.isoformat(timespec="seconds"),
+    }

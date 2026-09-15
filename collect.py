@@ -57,6 +57,7 @@ WEIGHTS = {
 THEMES_PATH = os.path.join(ROOT, "themes.json")
 LEVELS_PATH = os.path.join(ROOT, "levels.json")
 EXCHANGES_PATH = os.path.join(ROOT, "exchanges.json")
+WHALES_PATH = os.path.join(ROOT, "whales.json")
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; xrp-stress-gauge/2.0; +github pages)"}
 
@@ -713,6 +714,9 @@ def main():
         price_now = inputs["xrp"]["closes"][-1] if inputs.get("xrp") else None
         inputs["whales"] = whalemod.collect_whales(now, price_now, levels, exchanges, previous_log=prev_log,
                                                   verbose=args.verbose, mock=args.mock)
+        prev_pos = ((old or {}).get("details", {}).get("whales", {}) or {}).get("positions")
+        inputs["whales"]["positions"] = whalemod.track_positions(now, load_json(WHALES_PATH, {}), prev_pos,
+                                                                 verbose=args.verbose, mock=args.mock)
     except Exception as e:  # noqa: BLE001
         log(args.verbose, f"  [whales] module en échec : {e}")
         inputs["whales"] = None
