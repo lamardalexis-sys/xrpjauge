@@ -80,7 +80,15 @@ basculent haussiers ensemble, un triangle **rouge** au-dessus quand les trois
 basculent baissiers ; il faut repasser par le neutre pour qu'un nouveau signal
 soit émis. Un **petit point** signale un 2/3 (deux indices d'accord, le
 troisième neutre) : plus précoce, moins fiable. Le survol d'une bougie affiche
-O/H/L/C et le détail des marqueurs présents. C'est un filtre de confluence : peu de signaux, peu de faux
+O/H/L/C et le détail des marqueurs présents.
+
+**Filtre anti-bruit** (bouton « Filtre », actif par défaut en 5 min, 15 min et
+1 h) : un 3/3 n'est marqué que s'il va dans le sens de la tendance supérieure
+(1 h pour le 5 min, 4 h pour le 15 min, 1 j pour le 1 h), s'il tient deux
+bougies consécutives en intraday, si la bougie a un volume ≥ 1,2× la moyenne 20
+(5 min) et s'il est espacé du précédent. Les 3/3 écartés apparaissent en points
+gris (survol = raison). Le bandeau indique la tendance supérieure et le nombre
+de signaux écartés. C'est un filtre de confluence : peu de signaux, peu de faux
 positifs, mais un retard inhérent. Une confirmation, jamais une prédiction.
 
 ### Baleines (V4)

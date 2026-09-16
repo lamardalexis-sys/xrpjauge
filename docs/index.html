@@ -240,6 +240,7 @@
       <span class="range" id="prange">
         <button data-tf="5">5 m</button><button data-tf="15">15 m</button><button data-tf="60">1 h</button><button data-tf="240">4 h</button><button data-tf="1440" class="on">1 j</button>
         <button data-tf="tv" title="Widget TradingView complet">TradingView</button>
+        <button id="noise-btn" class="on" title="Filtre anti-bruit : tendance supérieure, persistance, volume, espacement">Filtre</button>
       </span></h2>
     <div id="live-chart" class="live-chart"></div>
     <div id="hover-info" class="hover-info"></div>
@@ -254,6 +255,7 @@
     </div>
     <div class="signal" id="signal" hidden>
       <div class="sig-main"><span class="sig-badge" id="sig-badge">–</span><span class="sig-text" id="sig-text"></span></div>
+      <div class="sig-row" id="sig-filter-row"></div>
       <div class="sig-row">
         <span class="chip" id="sig-trend"><b>Tendance</b> EMA 20/50 · <i>–</i></span>
         <span class="chip" id="sig-rsi"><b>Momentum</b> RSI 14 · <i>–</i></span>
@@ -528,6 +530,16 @@
   // ------------------------------------------------------------------ //
   let lwChart = null, lwSeries = null, lwLines = [], lwTf = '1440', lwCache = {};
   let rsiChart = null, rsiSeries = null, macdChart = null, macdHist = null, macdLine = null, macdSig = null, syncing = false;
+  let noiseFilter = true;
+  try { noiseFilter = localStorage.getItem('noise') !== '0'; } catch (e) {}
+  // Paramètres anti-bruit par unité de temps
+  const TF_CFG = {
+    '5':    { htf: '60',   persist: 2, cooldown: 6, rsiHi: 60, rsiLo: 40, volMult: 1.2, label: '1 h' },
+    '15':   { htf: '240',  persist: 2, cooldown: 4, rsiHi: 58, rsiLo: 42, volMult: 1.15, label: '4 h' },
+    '60':   { htf: '1440', persist: 1, cooldown: 3, rsiHi: 55, rsiLo: 45, volMult: 1.0, label: '1 j' },
+    '240':  { htf: null,   persist: 1, cooldown: 0, rsiHi: 55, rsiLo: 45, volMult: 1.0 },
+    '1440': { htf: null,   persist: 1, cooldown: 0, rsiHi: 55, rsiLo: 45, volMult: 1.0 },
+  };
   function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
   function setupPriceCard(series, levels, wlog) {
@@ -536,7 +548,7 @@
     const buttons = document.querySelectorAll('#prange button');
     const show = (tf) => {
       lwTf = tf;
-      buttons.forEach((b) => b.classList.toggle('on', b.dataset.tf === tf));
+      buttons.forEach((b) => { if (b.dataset.tf) b.classList.toggle('on', b.dataset.tf === tf); });
       $('tv-chart').hidden = tf !== 'tv';
       $('live-chart').hidden = tf === 'tv' || !hasLib;
       $('svg-wrap').hidden = hasLib || tf === 'tv';
@@ -550,7 +562,9 @@
           else { $('live-chart').hidden = true; $('svg-wrap').hidden = false; drawPrice(series.slice(-120), levels, wlog); }
         });
     };
-    buttons.forEach((b) => b.addEventListener('click', () => { try { localStorage.setItem('ptf', b.dataset.tf); } catch (e) {} show(b.dataset.tf); }));
+    buttons.forEach((b) => { if (b.dataset.tf) b.addEventListener('click', () => { try { localStorage.setItem('ptf', b.dataset.tf); } catch (e) {} show(b.dataset.tf); }); });
+    const nb = $('noise-btn'); nb.classList.toggle('on', noiseFilter);
+    nb.addEventListener('click', () => { noiseFilter = !noiseFilter; nb.classList.toggle('on', noiseFilter); try { localStorage.setItem('noise', noiseFilter ? '1' : '0'); } catch (e) {} lwCache._dirty = true; show(lwTf); });
     show(lwTf);
   }
 
@@ -562,7 +576,7 @@
         if (j.error && j.error.length) throw new Error(j.error.join(', '));
         const key = Object.keys(j.result).find((k) => k !== 'last');
         const rows = j.result[key];
-        const bars = rows.map((r) => ({ time: Number(r[0]), open: +r[1], high: +r[2], low: +r[3], close: +r[4] }));
+        const bars = rows.map((r) => ({ time: Number(r[0]), open: +r[1], high: +r[2], low: +r[3], close: +r[4], volume: +r[6] }));
         lwCache[tf] = bars; return bars;
       });
   }
@@ -578,22 +592,53 @@
     return out;
   }
   // Confluence : +1/-1/0 par indicateur, marqueur quand la somme atteint ±3 pour la première fois
-  function confluence(bars) {
+  function htfBias(htfBars) {
+    // Biais de la tendance supérieure : +1 / -1 / 0 par bougie HTF (EMA 20/50), consultable par timestamp
+    if (!htfBars || htfBars.length < 50) return null;
+    const c = htfBars.map((b) => b.close); const e20 = ema(c, 20), e50 = ema(c, 50);
+    const times = htfBars.map((b) => b.time);
+    const bias = htfBars.map((b, i) => i < 50 ? 0 : (b.close > e50[i] && e20[i] > e50[i]) ? 1 : (b.close < e50[i] && e20[i] < e50[i]) ? -1 : 0);
+    return (t) => { // dernière bougie HTF clôturée avant t
+      let lo = 0, hi = times.length - 1, k = -1;
+      while (lo <= hi) { const mid = (lo + hi) >> 1; if (times[mid] <= t) { k = mid; lo = mid + 1; } else hi = mid - 1; }
+      return k <= 0 ? 0 : bias[k - 1];
+    };
+  }
+
+  function confluence(bars, cfg, biasAt, filterOn) {
+    cfg = cfg || TF_CFG['1440'];
     const c = bars.map((b) => b.close);
     const e20 = ema(c, 20), e50 = ema(c, 50), r = rsi(c, 14);
     const e12 = ema(c, 12), e26 = ema(c, 26); const macd = c.map((_, i) => e12[i] - e26[i]); const sig = ema(macd, 9); const hist = macd.map((m, i) => m - sig[i]);
+    const vols = bars.map((b) => b.volume || 0);
+    const volAvg = vols.map((_, i) => i < 20 ? null : vols.slice(i - 20, i).reduce((a, b) => a + b, 0) / 20);
     const states = bars.map((b, i) => {
       if (i < 50) return null;
       const t = (b.close > e50[i] && e20[i] > e50[i]) ? 1 : (b.close < e50[i] && e20[i] < e50[i]) ? -1 : 0;
-      const m = r[i] == null ? 0 : r[i] > 55 ? 1 : r[i] < 45 ? -1 : 0;
+      const m = r[i] == null ? 0 : r[i] > cfg.rsiHi ? 1 : r[i] < cfg.rsiLo ? -1 : 0;
       const f = (hist[i] > 0 && hist[i] > hist[i - 1]) ? 1 : (hist[i] < 0 && hist[i] < hist[i - 1]) ? -1 : 0;
-      return { t, m, f, sum: t + m + f, rsi: r[i], hist: hist[i], e20: e20[i], e50: e50[i] };
+      const bias = biasAt ? biasAt(b.time) : 0;
+      const volOk = volAvg[i] == null || cfg.volMult <= 1 ? true : vols[i] >= cfg.volMult * volAvg[i];
+      return { t, m, f, sum: t + m + f, rsi: r[i], hist: hist[i], e20: e20[i], e50: e50[i], bias, volOk };
     });
-    const markers = [], pre = []; let prev = 0, prevPre = 0;
+    const markers = [], pre = [], filtered = []; let prev = 0, prevPre = 0, run = 0, lastSigIdx = { 1: -1e9, '-1': -1e9 };
     states.forEach((st, i) => {
       if (!st) return;
       const full = st.sum === 3 ? 1 : st.sum === -3 ? -1 : 0;
-      if (full !== 0 && full !== prev) markers.push({ time: bars[i].time, dir: full });
+      run = full !== 0 && states[i - 1] && ((states[i - 1].sum === 3 ? 1 : states[i - 1].sum === -3 ? -1 : 0) === full) ? run + 1 : (full !== 0 ? 1 : 0);
+      if (full !== 0 && full !== prev) {
+        let reason = null;
+        if (filterOn) {
+          if (biasAt && st.bias !== 0 && st.bias !== full) reason = 'contre la tendance ' + (cfg.label || 'supérieure');
+          else if (run < cfg.persist) reason = 'persistance insuffisante';
+          else if (!st.volOk) reason = 'volume faible';
+          else if (i - lastSigIdx[full] < cfg.cooldown) reason = 'trop proche du précédent';
+        }
+        if (reason) {
+          filtered.push({ time: bars[i].time, dir: full, reason });
+          if (reason === 'persistance insuffisante') return; // on réessaie à la bougie suivante sans marquer prev
+        } else { markers.push({ time: bars[i].time, dir: full }); lastSigIdx[full] = i; }
+      }
       if (full !== 0) prev = full; else if (Math.abs(st.sum) <= 1) prev = 0; // il faut repasser par le neutre pour re-signaler
       // pré-signal : deux indices d'accord, le troisième neutre (pas opposé)
       const votes = [st.t, st.m, st.f];
@@ -601,7 +646,7 @@
       if (p2 !== 0 && p2 !== prevPre && full === 0) pre.push({ time: bars[i].time, dir: p2 });
       prevPre = p2 !== 0 ? p2 : (full !== 0 ? full : 0);
     });
-    return { states, markers, pre, last: states[states.length - 1], series: { rsi: r, macd, sig, hist } };
+    return { states, markers, pre, filtered, last: states[states.length - 1], series: { rsi: r, macd, sig, hist }, cfg, filterOn, hasBias: !!biasAt };
   }
 
   function sma(bars, n) {
@@ -671,17 +716,26 @@
       return { time: t, position: up ? 'belowBar' : 'aboveBar', color: up ? good : down ? crit : acc, shape: 'circle', size: 0.9,
                _info: `Baleine · ${up ? 'retrait' : down ? 'dépôt' : 'transfert'} ${fmtN(w.xrp / 1e6, 1)} M XRP · ${w.from} → ${w.to}` };
     }).filter((m) => m.time >= bars[0].time);
-    // Signal de confluence (3 indices) : triangles pleins 3/3, petits points 2/3
-    const conf = confluence(bars);
+    // Signal de confluence (3 indices) : triangles pleins 3/3, petits points 2/3, filtre anti-bruit
+    const cfg = TF_CFG[tf] || TF_CFG['1440'];
+    const useFilter = noiseFilter && (cfg.htf || cfg.persist > 1 || cfg.volMult > 1);
+    const biasAt = useFilter && cfg.htf && lwCache[cfg.htf] ? htfBias(lwCache[cfg.htf]) : null;
+    if (useFilter && cfg.htf && !lwCache[cfg.htf]) {
+      // charge la tendance supérieure puis redessine (une fois)
+      loadKraken(cfg.htf).then(() => renderLive(bars, tf, levels, wlog, note)).catch(() => {});
+    }
+    const conf = confluence(bars, cfg, biasAt, useFilter);
+    conf.pre = useFilter ? [] : conf.pre; // en mode filtré, pas de pré-signaux (c'est eux le bruit)
     conf.pre.forEach((m) => markers.push({ time: m.time, position: m.dir > 0 ? 'belowBar' : 'aboveBar', color: m.dir > 0 ? acc : crit, shape: 'circle', size: 0.5, _info: `Pré-signal 2/3 ${m.dir > 0 ? 'haussier' : 'baissier'} : deux indices sur trois` }));
-    conf.markers.forEach((m) => markers.push({ time: m.time, position: m.dir > 0 ? 'belowBar' : 'aboveBar', color: m.dir > 0 ? acc : crit, shape: m.dir > 0 ? 'arrowUp' : 'arrowDown', size: 1.6, _info: `Signal 3/3 ${m.dir > 0 ? 'HAUSSIER' : 'BAISSIER'} : tendance, momentum et force alignés` }));
+    conf.filtered.forEach((m) => { if (m.reason !== 'persistance insuffisante') markers.push({ time: m.time, position: m.dir > 0 ? 'belowBar' : 'aboveBar', color: cssVar('--muted'), shape: 'circle', size: 0.5, _info: `3/3 ${m.dir > 0 ? 'haussier' : 'baissier'} filtré : ${m.reason}` }); });
+    conf.markers.forEach((m) => markers.push({ time: m.time, position: m.dir > 0 ? 'belowBar' : 'aboveBar', color: m.dir > 0 ? acc : crit, shape: m.dir > 0 ? 'arrowUp' : 'arrowDown', size: 1.6, _info: `Signal 3/3 ${m.dir > 0 ? 'HAUSSIER' : 'BAISSIER'}${conf.filterOn ? ' confirmé (filtre anti-bruit)' : ''} : tendance, momentum et force alignés` }));
     markers.sort((a, b) => a.time - b.time);
     lwSeries.setMarkers(markers.map(({ _info, ...m }) => m));
     lwChart._markerInfo = markers;
     renderSignal(conf, bars, tf);
     renderSubCharts(bars, conf, tf);
     lwChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, bars.length - (tf === '1440' ? 120 : tf === '240' ? 160 : 150)), to: bars.length + 6 });
-    $('plegend').innerHTML = `<span style="--c:${good}">Bougie haussière</span><span style="--c:${crit}">Bougie baissière</span><span class="ln" style="--c:${acc}">SMA 50</span><span class="ln" style="--c:${warn}">SMA 200</span><span style="--c:${good}">Zone d'achat</span><span style="--c:${ser}">Zones de vente</span><span style="--c:${crit}">Invalidation</span><span style="--c:${acc}">▲ 3/3 haussier</span><span style="--c:${crit}">▼ 3/3 baissier</span><span style="--c:${acc}">· 2/3 pré-signal</span><span style="--c:${good}">● retrait baleine</span><span style="--c:${crit}">● dépôt baleine</span>`;
+    $('plegend').innerHTML = `<span style="--c:${good}">Bougie haussière</span><span style="--c:${crit}">Bougie baissière</span><span class="ln" style="--c:${acc}">SMA 50</span><span class="ln" style="--c:${warn}">SMA 200</span><span style="--c:${good}">Zone d'achat</span><span style="--c:${ser}">Zones de vente</span><span style="--c:${crit}">Invalidation</span><span style="--c:${acc}">▲ 3/3 haussier</span><span style="--c:${crit}">▼ 3/3 baissier</span><span style="--c:${acc}">· 2/3 pré-signal (filtre off)</span><span style="--c:${cssVar('--muted')}">· 3/3 écarté par le filtre</span><span style="--c:${good}">● retrait baleine</span><span style="--c:${crit}">● dépôt baleine</span>`;
     $('pnote').textContent = note + '. Molette = zoom, glisser = déplacer, survol = détail de la bougie et des marqueurs. Indicateurs calculés sur l\'unité de temps affichée.';
   }
 
@@ -761,6 +815,16 @@
     set('sig-trend', st.t, `EMA20 ${fmtN(st.e20, 3)} / EMA50 ${fmtN(st.e50, 3)}`, 'haussier', 'baissier');
     set('sig-rsi', st.m, `RSI ${fmtN(st.rsi, 0)}`, 'haussier', 'baissier');
     set('sig-macd', st.f, `hist. ${st.hist > 0 ? '+' : ''}${fmtN(st.hist, 4)}`, 'haussier', 'baissier');
+    const fr = $('sig-filter-row'); fr.innerHTML = '';
+    if (conf.filterOn) {
+      const c = conf.cfg; const b = st.bias;
+      const bits = [];
+      if (c.htf) bits.push(`<span class="chip ${b > 0 ? 'bull' : b < 0 ? 'bear' : 'flat'}"><b>Tendance ${c.label}</b> · <i>${b > 0 ? 'haussière' : b < 0 ? 'baissière' : (conf.hasBias ? 'neutre' : 'chargement…')}</i></span>`);
+      bits.push(`<span class="chip flat"><b>Filtre</b> · <i>persistance ${c.persist}${c.volMult > 1 ? ' · volume ≥ ' + c.volMult + '×' : ''}${c.cooldown ? ' · espacement ' + c.cooldown : ''} · ${conf.filtered.filter((f) => f.reason !== 'persistance insuffisante').length} signaux écartés</i></span>`);
+      fr.innerHTML = bits.join('');
+    } else if (conf.cfg && (conf.cfg.htf || conf.cfg.persist > 1)) {
+      fr.innerHTML = '<span class="chip flat"><b>Filtre</b> · <i>désactivé : tous les 3/3 affichés</i></span>';
+    }
     const badge = $('sig-badge'); const n = Math.abs(st.sum);
     const bullCount = [st.t, st.m, st.f].filter((v) => v > 0).length, bearCount = [st.t, st.m, st.f].filter((v) => v < 0).length;
     badge.className = 'sig-badge ' + (bullCount === 3 ? 'bull' : bearCount === 3 ? 'bear' : '');
