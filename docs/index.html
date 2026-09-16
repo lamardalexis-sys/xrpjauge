@@ -93,8 +93,13 @@
   .pill { font-size: 11.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--ink-2); margin-left: 6px; vertical-align: 1px; }
 
   /* Graphique prix */
-  .live-chart { width: 100%; height: 520px; border-radius: 8px; overflow: hidden; }
-  @media (max-width: 640px) { .live-chart { height: 380px; } }
+  .live-chart { width: 100%; height: 400px; border-radius: 8px 8px 0 0; overflow: hidden; }
+  .sub-chart { width: 100%; height: 110px; overflow: hidden; }
+  .sub-label { font-size: 11.5px; color: var(--muted); padding: 4px 4px 0; border-top: 1px solid var(--grid); margin-top: 2px; }
+  .sub-label span { color: var(--ink-2); font-weight: 600; margin-left: 6px; }
+  .hover-info { min-height: 18px; font-size: 12.5px; color: var(--ink-2); padding: 2px 4px; }
+  .hover-info b { color: var(--ink); }
+  @media (max-width: 640px) { .live-chart { height: 320px; } .sub-chart { height: 90px; } }
   .range { float: right; display: inline-flex; gap: 4px; }
   .range button { font: inherit; font-size: 12px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--ink-2); cursor: pointer; text-transform: none; letter-spacing: 0; }
   .range button.on { background: var(--accent-soft); color: var(--ink); border-color: transparent; }
@@ -233,10 +238,15 @@
   <section class="card" style="margin-top:14px" id="price-card">
     <h2>Prix & zones <span class="h2-sub" id="psub">bougies en direct (Kraken)</span>
       <span class="range" id="prange">
-        <button data-tf="60">1 h</button><button data-tf="240">4 h</button><button data-tf="1440" class="on">1 j</button>
+        <button data-tf="5">5 m</button><button data-tf="15">15 m</button><button data-tf="60">1 h</button><button data-tf="240">4 h</button><button data-tf="1440" class="on">1 j</button>
         <button data-tf="tv" title="Widget TradingView complet">TradingView</button>
       </span></h2>
     <div id="live-chart" class="live-chart"></div>
+    <div id="hover-info" class="hover-info"></div>
+    <div class="sub-label" id="rsi-label" hidden>RSI 14 <span></span></div>
+    <div id="rsi-chart" class="sub-chart" hidden></div>
+    <div class="sub-label" id="macd-label" hidden>MACD 12/26/9 <span></span></div>
+    <div id="macd-chart" class="sub-chart" hidden></div>
     <div id="tv-chart" class="live-chart" hidden></div>
     <div class="chart-wrap" id="svg-wrap" hidden>
       <svg class="pchart" id="pchart" viewBox="0 0 800 300" role="img" aria-label="Prix XRP avec zones d'achat et de vente"></svg>
@@ -517,6 +527,7 @@
   // Graphique live : Lightweight Charts + bougies Kraken, repli SVG
   // ------------------------------------------------------------------ //
   let lwChart = null, lwSeries = null, lwLines = [], lwTf = '1440', lwCache = {};
+  let rsiChart = null, rsiSeries = null, macdChart = null, macdHist = null, macdLine = null, macdSig = null, syncing = false;
   function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
   function setupPriceCard(series, levels, wlog) {
@@ -532,7 +543,7 @@
       if (tf === 'tv') { mountTradingView(); $('psub').textContent = 'widget TradingView (KRAKEN:XRPUSD)'; $('plegend').innerHTML = ''; $('pnote').textContent = 'Graphique complet TradingView : indicateurs, outils de tracé, changement de paire. Les zones et baleines ne sont pas reportées ici.'; return; }
       if (!hasLib) { $('psub').textContent = 'bougies journalières (données du bot)'; drawPrice(series.slice(-120), levels, wlog); return; }
       $('psub').textContent = 'bougies en direct (Kraken)';
-      loadKraken(tf).then((bars) => renderLive(bars, tf, levels, wlog, 'Kraken · ' + ({ '60': '1 h', '240': '4 h', '1440': '1 j' })[tf] + ' · chargé à ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })))
+      loadKraken(tf).then((bars) => renderLive(bars, tf, levels, wlog, 'Kraken · ' + ({ '5': '5 min', '15': '15 min', '60': '1 h', '240': '4 h', '1440': '1 j' })[tf] + ' · ' + bars.length + ' bougies · chargé à ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })))
         .catch((e) => {
           const bars = series.filter((s) => s.o != null && s.d).map((s) => ({ time: Math.floor(Date.parse(s.d + 'T00:00:00Z') / 1000), open: s.o, high: s.h, low: s.l, close: s.c }));
           if (bars.length) renderLive(bars, '1440', levels, wlog, 'Kraken injoignable depuis le navigateur (' + e.message + ') · bougies journalières du bot');
@@ -578,14 +589,19 @@
       const f = (hist[i] > 0 && hist[i] > hist[i - 1]) ? 1 : (hist[i] < 0 && hist[i] < hist[i - 1]) ? -1 : 0;
       return { t, m, f, sum: t + m + f, rsi: r[i], hist: hist[i], e20: e20[i], e50: e50[i] };
     });
-    const markers = []; let prev = 0;
+    const markers = [], pre = []; let prev = 0, prevPre = 0;
     states.forEach((st, i) => {
       if (!st) return;
       const full = st.sum === 3 ? 1 : st.sum === -3 ? -1 : 0;
       if (full !== 0 && full !== prev) markers.push({ time: bars[i].time, dir: full });
       if (full !== 0) prev = full; else if (Math.abs(st.sum) <= 1) prev = 0; // il faut repasser par le neutre pour re-signaler
+      // pré-signal : deux indices d'accord, le troisième neutre (pas opposé)
+      const votes = [st.t, st.m, st.f];
+      const p2 = (votes.filter((v) => v > 0).length === 2 && !votes.some((v) => v < 0)) ? 1 : (votes.filter((v) => v < 0).length === 2 && !votes.some((v) => v > 0)) ? -1 : 0;
+      if (p2 !== 0 && p2 !== prevPre && full === 0) pre.push({ time: bars[i].time, dir: p2 });
+      prevPre = p2 !== 0 ? p2 : (full !== 0 ? full : 0);
     });
-    return { states, markers, last: states[states.length - 1] };
+    return { states, markers, pre, last: states[states.length - 1], series: { rsi: r, macd, sig, hist } };
   }
 
   function sma(bars, n) {
@@ -624,16 +640,9 @@
     const dark = matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light' || document.documentElement.dataset.theme === 'dark';
     const good = cssVar('--good'), crit = cssVar('--critical'), ser = cssVar('--serious'), acc = cssVar('--accent'), warn = cssVar('--warning');
     if (!lwChart) {
-      lwChart = LightweightCharts.createChart(host, {
-        autoSize: true,
-        layout: { background: { color: 'transparent' }, textColor: cssVar('--muted'), fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif', attributionLogo: false },
-        grid: { vertLines: { visible: false }, horzLines: { color: cssVar('--grid'), style: 1 } },
-        rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.08, bottom: 0.08 } },
-        timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false, rightOffset: 6, barSpacing: 7 },
-        crosshair: { mode: 0, vertLine: { color: cssVar('--muted'), width: 1, style: 3, labelBackgroundColor: cssVar('--ink-2') }, horzLine: { color: cssVar('--muted'), width: 1, style: 3, labelBackgroundColor: cssVar('--ink-2') } },
-        handleScale: { axisPressedMouseMove: true }, handleScroll: { vertTouchDrag: false },
-        localization: { locale: 'fr-FR', priceFormatter: (p) => p.toFixed(p < 2 ? 4 : 3) },
-      });
+      const o = baseOpts(); o.rightPriceScale.scaleMargins = { top: 0.08, bottom: 0.08 }; o.timeScale.visible = false;
+      o.localization.priceFormatter = (p) => p.toFixed(p < 2 ? 4 : 3);
+      lwChart = LightweightCharts.createChart(host, o);
       lwSeries = lwChart.addCandlestickSeries({ upColor: good, downColor: crit, borderVisible: false, wickUpColor: good, wickDownColor: crit, priceLineColor: cssVar('--ink-2'), priceLineStyle: 3 });
       lwChart._sma50 = lwChart.addLineSeries({ color: acc, lineWidth: 1, lineStyle: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
       lwChart._sma200 = lwChart.addLineSeries({ color: warn, lineWidth: 1, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
@@ -659,18 +668,88 @@
       let t = Math.floor(new Date(w.ts).getTime() / 1000 / step) * step;
       if (!times.has(t)) { t = bars.reduce((best, b) => Math.abs(b.time - t) < Math.abs(best - t) ? b.time : best, bars[0].time); }
       const up = w.kind === 'retrait', down = w.kind === 'depot';
-      return { time: t, position: up ? 'belowBar' : 'aboveBar', color: up ? good : down ? crit : acc, shape: 'circle', size: 1.4,
-               text: (up ? 'R ' : down ? 'D ' : 'T ') + fmtN(w.xrp / 1e6, 0) + ' M' };
+      return { time: t, position: up ? 'belowBar' : 'aboveBar', color: up ? good : down ? crit : acc, shape: 'circle', size: 0.9,
+               _info: `Baleine · ${up ? 'retrait' : down ? 'dépôt' : 'transfert'} ${fmtN(w.xrp / 1e6, 1)} M XRP · ${w.from} → ${w.to}` };
     }).filter((m) => m.time >= bars[0].time);
-    // Signal de confluence (3 indices)
+    // Signal de confluence (3 indices) : triangles pleins 3/3, petits points 2/3
     const conf = confluence(bars);
-    conf.markers.forEach((m) => markers.push({ time: m.time, position: m.dir > 0 ? 'belowBar' : 'aboveBar', color: m.dir > 0 ? acc : crit, shape: m.dir > 0 ? 'arrowUp' : 'arrowDown', text: '3/3' }));
+    conf.pre.forEach((m) => markers.push({ time: m.time, position: m.dir > 0 ? 'belowBar' : 'aboveBar', color: m.dir > 0 ? acc : crit, shape: 'circle', size: 0.5, _info: `Pré-signal 2/3 ${m.dir > 0 ? 'haussier' : 'baissier'} : deux indices sur trois` }));
+    conf.markers.forEach((m) => markers.push({ time: m.time, position: m.dir > 0 ? 'belowBar' : 'aboveBar', color: m.dir > 0 ? acc : crit, shape: m.dir > 0 ? 'arrowUp' : 'arrowDown', size: 1.6, _info: `Signal 3/3 ${m.dir > 0 ? 'HAUSSIER' : 'BAISSIER'} : tendance, momentum et force alignés` }));
     markers.sort((a, b) => a.time - b.time);
-    lwSeries.setMarkers(markers);
+    lwSeries.setMarkers(markers.map(({ _info, ...m }) => m));
+    lwChart._markerInfo = markers;
     renderSignal(conf, bars, tf);
-    lwChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, bars.length - (tf === '1440' ? 120 : tf === '240' ? 160 : 140)), to: bars.length + 6 });
-    $('plegend').innerHTML = `<span style="--c:${good}">Bougie haussière</span><span style="--c:${crit}">Bougie baissière</span><span class="ln" style="--c:${acc}">SMA 50</span><span class="ln" style="--c:${warn}">SMA 200</span><span style="--c:${good}">Zone d'achat</span><span style="--c:${ser}">Zones de vente</span><span style="--c:${crit}">Invalidation</span><span style="--c:${acc}">▲ signal 3/3 haussier</span><span style="--c:${crit}">▼ signal 3/3 baissier</span><span style="--c:${good}">● R = retrait baleine</span><span style="--c:${crit}">● D = dépôt baleine</span>`;
-    $('pnote').textContent = note + '. Molette = zoom, glisser = déplacer. Les SMA sont calculées sur l\'unité de temps affichée.';
+    renderSubCharts(bars, conf, tf);
+    lwChart.timeScale().setVisibleLogicalRange({ from: Math.max(0, bars.length - (tf === '1440' ? 120 : tf === '240' ? 160 : 150)), to: bars.length + 6 });
+    $('plegend').innerHTML = `<span style="--c:${good}">Bougie haussière</span><span style="--c:${crit}">Bougie baissière</span><span class="ln" style="--c:${acc}">SMA 50</span><span class="ln" style="--c:${warn}">SMA 200</span><span style="--c:${good}">Zone d'achat</span><span style="--c:${ser}">Zones de vente</span><span style="--c:${crit}">Invalidation</span><span style="--c:${acc}">▲ 3/3 haussier</span><span style="--c:${crit}">▼ 3/3 baissier</span><span style="--c:${acc}">· 2/3 pré-signal</span><span style="--c:${good}">● retrait baleine</span><span style="--c:${crit}">● dépôt baleine</span>`;
+    $('pnote').textContent = note + '. Molette = zoom, glisser = déplacer, survol = détail de la bougie et des marqueurs. Indicateurs calculés sur l\'unité de temps affichée.';
+  }
+
+  function baseOpts() {
+    return {
+      autoSize: true,
+      layout: { background: { color: 'transparent' }, textColor: cssVar('--muted'), fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif', attributionLogo: false },
+      grid: { vertLines: { visible: false }, horzLines: { color: cssVar('--grid'), style: 1 } },
+      rightPriceScale: { borderVisible: false, minimumWidth: 72 },
+      timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false, rightOffset: 6, barSpacing: 7 },
+      crosshair: { mode: 0, vertLine: { color: cssVar('--muted'), width: 1, style: 3, labelBackgroundColor: cssVar('--ink-2') }, horzLine: { color: cssVar('--muted'), width: 1, style: 3, labelBackgroundColor: cssVar('--ink-2') } },
+      handleScale: { axisPressedMouseMove: true }, handleScroll: { vertTouchDrag: false },
+      localization: { locale: 'fr-FR' },
+    };
+  }
+
+  function renderSubCharts(bars, conf, tf) {
+    const acc = cssVar('--accent'), crit = cssVar('--critical'), good = cssVar('--good'), warn = cssVar('--warning'), muted = cssVar('--muted');
+    ['rsi-label', 'rsi-chart', 'macd-label', 'macd-chart'].forEach((id) => { $(id).hidden = false; });
+    if (!rsiChart) {
+      const o = baseOpts(); o.timeScale.visible = false; o.rightPriceScale.scaleMargins = { top: 0.06, bottom: 0.06 };
+      rsiChart = LightweightCharts.createChart($('rsi-chart'), o);
+      rsiSeries = rsiChart.addLineSeries({ color: cssVar('--ink-2'), lineWidth: 1.5, priceLineVisible: false, lastValueVisible: true, crosshairMarkerVisible: false, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
+      [[70, crit], [55, acc], [45, acc], [30, good]].forEach(([v, c]) => rsiSeries.createPriceLine({ price: v, color: c, lineWidth: 1, lineStyle: 2, axisLabelVisible: false, title: '' }));
+      const o2 = baseOpts();
+      macdChart = LightweightCharts.createChart($('macd-chart'), o2);
+      macdHist = macdChart.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false, base: 0 });
+      macdLine = macdChart.addLineSeries({ color: acc, lineWidth: 1.5, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+      macdSig = macdChart.addLineSeries({ color: warn, lineWidth: 1.5, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+      // Synchronisation de l'axe du temps et du réticule
+      const charts = [lwChart, rsiChart, macdChart];
+      const seriesOf = [lwSeries, rsiSeries, macdLine];
+      charts.forEach((c, i) => {
+        c.timeScale().subscribeVisibleLogicalRangeChange((r) => {
+          if (syncing || !r) return; syncing = true;
+          charts.forEach((o) => { if (o !== c) o.timeScale().setVisibleLogicalRange(r); });
+          syncing = false;
+        });
+        c.subscribeCrosshairMove((param) => {
+          if (!param.time) { charts.forEach((o) => { if (o !== c) o.clearCrosshairPosition(); }); if (i === 0) $('hover-info').textContent = ''; return; }
+          charts.forEach((o, j) => { if (o !== c) { const d = o._lastData && o._lastData[param.time]; o.setCrosshairPosition(d == null ? 0 : d, param.time, seriesOf[j]); } });
+          if (c === lwChart) hoverInfo(param);
+        });
+      });
+    }
+    const S = conf.series;
+    const t = (i) => bars[i].time;
+    rsiSeries.setData(bars.map((b, i) => S.rsi[i] == null ? { time: t(i) } : { time: t(i), value: S.rsi[i] }));
+    macdHist.setData(bars.map((b, i) => ({ time: t(i), value: S.hist[i], color: S.hist[i] >= 0 ? (S.hist[i] >= (S.hist[i - 1] || 0) ? good : good + '80') : (S.hist[i] <= (S.hist[i - 1] || 0) ? crit : crit + '80') })));
+    macdLine.setData(bars.map((b, i) => ({ time: t(i), value: S.macd[i] })));
+    macdSig.setData(bars.map((b, i) => ({ time: t(i), value: S.sig[i] })));
+    lwChart._lastData = Object.fromEntries(bars.map((b) => [b.time, b.close]));
+    rsiChart._lastData = Object.fromEntries(bars.map((b, i) => [b.time, S.rsi[i]]));
+    macdChart._lastData = Object.fromEntries(bars.map((b, i) => [b.time, S.macd[i]]));
+    const last = conf.last;
+    $('rsi-label').querySelector('span').textContent = last ? fmtN(last.rsi, 1) + (last.rsi > 70 ? ' · suracheté' : last.rsi < 30 ? ' · survendu' : last.rsi > 55 ? ' · haussier' : last.rsi < 45 ? ' · baissier' : ' · neutre') : '';
+    $('macd-label').querySelector('span').textContent = last ? 'hist. ' + (last.hist > 0 ? '+' : '') + fmtN(last.hist, 4) + (last.f > 0 ? ' · force haussière' : last.f < 0 ? ' · force baissière' : ' · en transition') : '';
+  }
+
+  function hoverInfo(param) {
+    const box = $('hover-info');
+    const bar = param.seriesData && lwSeries ? param.seriesData.get(lwSeries) : null;
+    const infos = (lwChart._markerInfo || []).filter((m) => m.time === param.time).map((m) => m._info);
+    const when = new Date(param.time * 1000).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
+    let txt = when;
+    if (bar && bar.open != null) txt += ` · O ${fmtN(bar.open, 4)} H ${fmtN(bar.high, 4)} L ${fmtN(bar.low, 4)} <b>C ${fmtN(bar.close, 4)}</b> (${bar.close >= bar.open ? '+' : ''}${fmtN((bar.close / bar.open - 1) * 100, 2)} %)`;
+    if (infos.length) txt += ' · <b>' + infos.join(' · ') + '</b>';
+    box.innerHTML = txt;
   }
 
   function renderSignal(conf, bars, tf) {
@@ -687,7 +766,7 @@
     badge.className = 'sig-badge ' + (bullCount === 3 ? 'bull' : bearCount === 3 ? 'bear' : '');
     badge.textContent = bullCount === 3 ? '3/3 HAUSSIER' : bearCount === 3 ? '3/3 BAISSIER' : `${Math.max(bullCount, bearCount)}/3 ${bullCount > bearCount ? 'haussier' : bearCount > bullCount ? 'baissier' : 'indécis'}`;
     const last = conf.markers[conf.markers.length - 1];
-    const unit = { '60': 'h', '240': '×4 h', '1440': 'j' }[tf] || '';
+    const unit = { '5': '×5 min', '15': '×15 min', '60': 'h', '240': '×4 h', '1440': 'j' }[tf] || '';
     let txt = '';
     if (last) {
       const idx = bars.findIndex((b) => b.time === last.time); const since = bars.length - 1 - idx;

@@ -63,7 +63,7 @@ titres, le lexique et l'IA suffisent au composant.
 
 ### Graphique de prix et zones (V4)
 
-Sous la jauge : graphique en direct (bibliothèque Lightweight Charts de TradingView + bougies Kraken chargées par ton navigateur, 1 h / 4 h / 1 j, zoom et déplacement), SMA 50 et 200, **zone d'achat** (vert),
+Sous la jauge : graphique en direct (bibliothèque Lightweight Charts de TradingView + bougies Kraken chargées par ton navigateur, 5 min / 15 min / 1 h / 4 h / 1 j, zoom et déplacement, sous-graphiques RSI et MACD synchronisés), SMA 50 et 200, **zone d'achat** (vert),
 **ligne d'invalidation** (clôture hebdo en dessous = thèse « fond touché »
 fausse) et **zones de vente / allègement** (orange). Tout se règle dans
 `levels.json`. Un onglet **TradingView** affiche le widget complet (indicateurs,
@@ -78,7 +78,9 @@ l'unité de temps affichée : **tendance** (prix vs EMA 20/50), **momentum**
 signe et pente). Un triangle **bleu** sous la bougie apparaît quand les trois
 basculent haussiers ensemble, un triangle **rouge** au-dessus quand les trois
 basculent baissiers ; il faut repasser par le neutre pour qu'un nouveau signal
-soit émis. C'est un filtre de confluence : peu de signaux, peu de faux
+soit émis. Un **petit point** signale un 2/3 (deux indices d'accord, le
+troisième neutre) : plus précoce, moins fiable. Le survol d'une bougie affiche
+O/H/L/C et le détail des marqueurs présents. C'est un filtre de confluence : peu de signaux, peu de faux
 positifs, mais un retard inhérent. Une confirmation, jamais une prédiction.
 
 ### Baleines (V4)
