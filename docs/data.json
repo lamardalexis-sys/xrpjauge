@@ -1613,12 +1613,12 @@
     },
     {
       "d": "2026-10-13",
-      "c": 1.3516,
+      "c": 1.366,
       "o": 1.3403,
-      "h": 1.353,
+      "h": 1.3808,
       "l": 1.31,
-      "s50": 1.425,
-      "s200": 1.2798
+      "s50": 1.4253,
+      "s200": 1.2799
     }
   ],
   "levels": {
@@ -1646,8 +1646,8 @@
     ]
   },
   "version": 4,
-  "updated_at": "2026-10-13T02:01:34+00:00",
-  "score": 24.6,
+  "updated_at": "2026-10-13T09:22:02+00:00",
+  "score": 24.2,
   "zone": "calme",
   "zone_label": "Calme",
   "weights": {
@@ -1661,57 +1661,55 @@
     "news": 10
   },
   "components": {
-    "trend": 27.2,
-    "momentum": 18.7,
-    "leverage": 56.2,
-    "volatility": 0.7,
-    "liquidity": 24.4,
+    "trend": 25.0,
+    "momentum": 16.8,
+    "leverage": 51.0,
+    "volatility": 1.2,
+    "liquidity": 25.4,
     "sentiment": 18.0,
     "events": 0.0,
-    "news": 30.5
+    "news": 40.2
   },
   "details": {
     "trend": {
       "xrp": {
-        "sma200": 1.2798,
-        "dist_sma200_pct": 5.61,
-        "sma50": 1.425,
-        "dist_sma50_pct": -5.15
+        "sma200": 1.2799,
+        "dist_sma200_pct": 6.73,
+        "sma50": 1.4253,
+        "dist_sma50_pct": -4.16
       },
       "btc": {
-        "sma200": 72124.313,
-        "dist_sma200_pct": 14.16,
-        "sma50": 81087.372,
-        "dist_sma50_pct": 1.54
+        "sma200": 72129.766,
+        "dist_sma200_pct": 15.66,
+        "sma50": 81109.184,
+        "dist_sma50_pct": 2.86
       },
-      "xrp_btc_ratio_sats": 1642,
-      "xrp_vs_btc_30d_pct": -5.96
+      "xrp_btc_ratio_sats": 1637,
+      "xrp_vs_btc_30d_pct": -6.2
     },
     "momentum": {
-      "change_7d_pct": -9.71,
-      "change_30d_pct": 0.82,
-      "rvol_7d_pct": 54.5,
-      "rvol_30d_pct": 70.2,
+      "change_7d_pct": -8.75,
+      "change_30d_pct": 1.89,
+      "rvol_7d_pct": 57.7,
+      "rvol_30d_pct": 70.5,
       "volume_vs_30d": 0.41
     },
     "leverage": {
-      "funding_pct_8h": -0.0027,
-      "funding_avg7d_pct_8h": 0.0006,
+      "funding_pct_8h": -0.0006,
+      "funding_avg7d_pct_8h": 0.0001,
       "oi_change_7d_pct": -19.61,
-      "long_short_ratio": 3.49,
-      "liq_long_share_pct": 76.4,
-      "liq_total_usd": 368963
+      "long_short_ratio": 3.12,
+      "liq_long_share_pct": 61.4,
+      "liq_total_usd": 506859
     },
     "volatility": {
-      "btc_dvol": 37.1,
-      "btc_dvol_avg30": 36.7,
-      "vix": 15.21,
-      "vix_avg": 15.65
+      "vix": 15.4,
+      "vix_avg": 15.63
     },
     "liquidity": {
       "stablecoins_7d_pct": -0.52,
-      "stablecoins_usd_bn": 311.0,
-      "btc_dominance_pct": 59.37
+      "stablecoins_usd_bn": 311.1,
+      "btc_dominance_pct": 59.77
     },
     "whales": {
       "log": [],
@@ -1732,7 +1730,7 @@
         "accounts": [],
         "auto_richlist": false,
         "tracked": 0,
-        "updated_at": "2026-10-13T02:01:34+00:00"
+        "updated_at": "2026-10-13T09:22:02+00:00"
       }
     },
     "sentiment": {
@@ -1745,35 +1743,35 @@
           "name": "Fed — décision FOMC",
           "date": "2026-10-28",
           "impact": 3,
-          "days": 14.9,
+          "days": 14.6,
           "score": 0.0
         },
         {
           "name": "Ripple — déblocage escrow 1 Md XRP",
           "date": "2026-11-01",
           "impact": 1,
-          "days": 18.9,
+          "days": 18.6,
           "score": 0.0
         },
         {
           "name": "Élections de mi-mandat US",
           "date": "2026-11-03",
           "impact": 2,
-          "days": 20.9,
+          "days": 20.6,
           "score": 0.0
         },
         {
           "name": "Ripple — déblocage escrow 1 Md XRP",
           "date": "2026-12-01",
           "impact": 1,
-          "days": 48.9,
+          "days": 48.6,
           "score": 0.0
         },
         {
           "name": "Fed — décision FOMC",
           "date": "2026-12-09",
           "impact": 3,
-          "days": 56.9,
+          "days": 56.6,
           "score": 0.0
         }
       ]
@@ -1784,118 +1782,22 @@
         "model": "claude-haiku-4-5",
         "global": 42,
         "themes": {
-          "trump": 45,
-          "russia": 50,
-          "china": 35,
-          "mideast": 55,
-          "fed": 50,
-          "crypto": 15,
-          "ai": 25,
+          "trump": 35,
+          "russia": 45,
+          "china": 50,
+          "mideast": 65,
+          "fed": 55,
+          "crypto": 25,
+          "ai": 20,
           "markets": 30
         },
-        "summary": "Tensions géopolitiques (Russie, Iran) et inflation persistante dominent ; crypto et XRP peu affectés à court terme.",
-        "at": "2026-10-13T02:03:15+00:00"
+        "summary": "Tensions géopolitiques (Moyen-Orient, Ukraine, tarifs) et inflation persistante dominent ; crypto-actifs peu affectés pour l'instant.",
+        "at": "2026-10-13T09:26:27+00:00"
       },
       "themes": [
         {
           "key": "trump",
           "label": "Trump / Maison-Blanche",
-          "score": 29.3,
-          "tone_24h": null,
-          "tone_7d": null,
-          "vol_ratio": null,
-          "lex": 1.1,
-          "ai": 45,
-          "headlines": [
-            {
-              "t": "Don’t blame Ukraine: Prices go up and up, thanks to Trump’s wars",
-              "src": "SMH.com.au",
-              "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxQWnRnZ3RBTkFLNm1RcHhoUTFFNHd6SENZbFd5SEpLeWFCdGhweVZVSXpiRC1ISTRkQ2JtTGJWX0lINVFFV0pYOVR3OU5nT0l0dTJtaGVxSDRJV1drX0JnaGxQZThHSkdEaEdGVlJNT3RXbWRET0RIUE01TDBwVlFjRFhoQW9jdnRfQlc4LS1fWTJuRnNxS29XcTlNVDBKazdDVElZVUVRX2JuNlZtbFd3Q0huT2NtWWpOQTlVM2RBeHlCRGpNT3c?oc=5",
-              "age_h": 0.9
-            },
-            {
-              "t": "Trump considers firing US ambassador to Greece over misconduct allegations",
-              "src": "TRT World",
-              "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxNa0FnM0tTZ0EtWElPZEV2eXBUaGNMNFEtNlFUcVRQaVhENG11WV9EWDRCNGozZ0dOb202MU05cmRrT2NGOWluNHZIRGdKRl9TQTZKLUVxTi1idTRPNGQ3eHNTRVhCOHVaVXRwMC1GZHhEa0tDcDdUMnY5ZjRNUzVXZ2c3REN4Um5qVWpnYkVwa3M3TTRxQVU3M1J1TWlNb25Na2l1dlBrVjBYMTI2X2Jza19kQmcwUVdBaElQRzBNQ0FhWXNFY0x5T0ZuSUszN1dPME83RGtCU2VWTF9NRDVlblRiRXJydw?oc=5",
-              "age_h": 1.3
-            },
-            {
-              "t": "Trump Lifts Russian Diesel Sanctions in Election-Eve Deal With Putin",
-              "src": "Seoul Economic Daily",
-              "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNNzZOazRyRG5JVy1WQUpEOWVtT0R2UXhDT3cxNmk5eE01VWU1Y0Q4NEVZSzdleTNJUy1QaEZHZzRUc1Y2M2JZSnluSkFGdGlqY09sQWRWNk9ZYXBTeU5NbVdzRVVPWERxTFgyRU0yZEYtNFpSTUdJOWo2UEZub3hvbnFObWRxU29ZVEtMblF3bVFQQU53WVpzbUVwcDAwRlFfLW1QQ0xuejY?oc=5",
-              "age_h": 1.5
-            },
-            {
-              "t": "USDA Urges States to Review Wolf Management Policies Following Trump Executive Order",
-              "src": "Dailyfly News",
-              "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNM2Z2U2hLMGxLQ0JIOWNzVDFES3pHSU9reXFiY091Snc0dUpjZ3Y1enJ3NkxHZ29oM0hRc1VWNGpJeFFUekpDeG50dHFOanNGU2dvM2FnXzE4WE4wN19zQmY5ZXd2M2ZPcXNpVlIwdnd3OXMxNkhHWDI2Z2tyUjltWS1nejhjbnlfWUs1MFp0RjVYREV1ZG16aHFtTl90ZDljWkhYTUNiN0lONFVJcmVUY2J4aEtnRHdobG9QcmZ3?oc=5",
-              "age_h": 1.7
-            },
-            {
-              "t": "Senators say Trump's Russian diesel deal violates US law, demand White House reverse course",
-              "src": "Scripps News",
-              "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPT0ctQ2xEUkFkcFA5aUlUYUZaV290emNXWkFtS2xoMkMyT0FaVk11M0g5RGNfTU1Wb1UtRDdvLXlnWkxWWnJGNERDaFdaWTkzNVlldTZuU1NXWVBmWGZ6bDBxUTR0Tk5ITHl1S29ZUm9uREJDUzJNZXZTU28wUm9rVW1sYjgtbTRzZ0pELWNrUi1UQi11M1JaYm5VX09RUTBjaEhlREpzZDJwREtIR3hxSHVjRVlkZmR2Q0tacVZoRWFnQzg?oc=5",
-              "age_h": 2.2
-            },
-            {
-              "t": "Trump Defends Russian Diesel Deal as Zelenskyy Criticizes Easing of Sanctions",
-              "src": "WENY News",
-              "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPaWNEM0NCb2wtVmtlMzlCcG11cmlNXzhtM3hOWU1sT0JlMTdBWVlobnR2NHBQQnl2RTVTNzBydXdDNGNjUmI3emJNcEJ2eTZzNHpuT2drQW9kSkN1YU9kRkloYThqOHlWM3hfLVhLR0hCbmpMRHZTbDRoMzZHc2pZNUxxYUdpUkFIeWx3VGFwV0I3eXNBX3ZQYTRzSERUN2RmT1RtVncxR3Q3ZFdNMGthajNXdnpGZWtELWNPSC15Nl9Xd1dSc0cwV25GQlItLUt6V1VPRS1DeXRoOVljQ2Y0?oc=5",
-              "age_h": 2.7
-            }
-          ]
-        },
-        {
-          "key": "russia",
-          "label": "Russie / Ukraine / OTAN",
-          "score": 36.5,
-          "tone_24h": null,
-          "tone_7d": null,
-          "vol_ratio": null,
-          "lex": 12.2,
-          "ai": 50,
-          "headlines": [
-            {
-              "t": "‘Make the problem and the solution bigger’: The plan to end the Ukraine war",
-              "src": "The Washington Post",
-              "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQUmF3OElPd2JoNk9pQjNJOXlKR1E5ZEhSWDVvN2dydzA3WkFKelN5dDFqb3hSUDB2MTBFMG5ha0I4cm1UNmhyajdDRjZhRElaVDZCajhENXlMem8yRUZhWVdQRndfQmZfakJRSTZ6UXdGbnd2amRTcGo4MGxoMzRzelJBY2xJSDhBRGNIbk15b0RCUTVTVEFDYVpWYUpkT0gzZzhCVGNuaWhpdFhLc2hNdkxn?oc=5",
-              "age_h": 0.3
-            },
-            {
-              "t": "Ukraine News Today: Breaking Updates & Live Coverage - October 13, 2026 from Kyiv Post",
-              "src": "Kyiv Post",
-              "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE84YTFhYWtkaGhrUXB5Q2xsTC05M1U4U2t3aHk0Z0s4S1NLMjhHRGRuc0lCVEswT1lhakJyOHBRVEJqRXVCSXM0QlFzdl9hQQ?oc=5",
-              "age_h": 0.9
-            },
-            {
-              "t": "Trump Says Putin More Eager Than Zelenskyy to End Ukraine War",
-              "src": "Deccan Chronicle",
-              "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPUVFOWUxYdWUwQmRzTy1ua1hIaVh4ZUxub3phR0ZoV2NDcXdaSzBLUEtDRDNMbF8wYklkbVBOTGZESUo0VDdXRG9ua1pFYmM5NXRiLUpIWTVnY2xFWVhyUkRwYkZGX2VUbjhvNUpkcTlVYWNYY2lzNDM2Nzh3VXBUMFJuMFIyaTlDYnBPRkZqdUY4Nl9aWU5ZU3kzSHNOeDJtTmRRQWNDYW1uQlXSAbABQVVfeXFMUGpDMUI0eS16cVVKUGJ3bHVJcUM4RXhnVUtVeXdjdEJKNTJYcW1MX2NHcTN3MWFZdC1yRzFzczNpMkJnN1JTQkNheE5mT1FFTjZwbEN2aUJ0NDlKa1pUMzJyWTcxWWJ1V0tPdkJPZzFqQ3E4ajBjT0Y3cHBvbjN0Rm5BQ29wNUdISVgwZ3UwQ240djZaQXJtT2VKaDVhWHduNnpJQXpaSkw4QzhqTmVmSHg?oc=5",
-              "age_h": 1.2
-            },
-            {
-              "t": "Russia Ukraine War",
-              "src": "TelegraphHerald.com",
-              "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxPZHYyc2FtWmQ4WENvRGFXSk43WlpqVkxyTGRMaVNxaVdvRHlzY0ktemc4bGJtWEhjdWxtRHNtalpuQzBfRmhvZUhxdjZLSGxQXzZFX3VCaHJLVWJqZEQydl93bFJuTjVCbnk0Q1JYakprUjZvdUtoQnc0aF9HMUVPWGU4bTdpMThxOEo4YXZKRmZJM2dHcXUxSg?oc=5",
-              "age_h": 1.6
-            },
-            {
-              "t": "US envoys present Russian diesel deal to Ukraine as bid to revive peace talks — report",
-              "src": "TRT World",
-              "url": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxOS1NKQmRndDFPRG1HNUtKSFdwLXk5TmR0T2FrcEtTdk1zN3kxOTZNcE1SYnhzN2NlRXZ1ZnR3ZjQ3aS1kb2VwQUdQLXFTWko5aG5yS3JxNGhMRXJqWlB0UzVlaUtFX2J2eXhpLWVxaFFJTk90NFppS1FHNFVQZFphNDBUSldJVEk2T2xZV0tOWHVyZ3hIRXlvOFhwM3cxZlRKLTRWby1idHhQVm5rZUVMY0EzR3lJWVk4eGNsdVBYdDBqS0swZE51Nk9sbTZGcWxpZmx2eW9pank2MmtYVzNsYkI2aFQ0dw?oc=5",
-              "age_h": 1.6
-            },
-            {
-              "t": "Trump says Putin, Zelenskyy must reach deal to end 'ridiculous war'",
-              "src": "Anadolu Ajansı",
-              "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPQThWTm1JRlk1U2RmQ0VSSXEzQmxpbzh0YXRVeFdab1gtRnpDMHFmaFB2dzVnZHdlTnlLak1YUlEtUDQ0UDVCblRSVXRGSGZzLUlITzNBVWpFMnNZSWNLVHpFSDJJWFppWlVha01iQUVLQTBHR3ZaMVVyMEp5M0kwM0lEOXpWYzZuMzBoZ0NXSjZZQjVrQnRhUWs1ZzB3ZDBwRnJGY1RINzh6Zw?oc=5",
-              "age_h": 2.4
-            }
-          ]
-        },
-        {
-          "key": "china",
-          "label": "Chine / Taïwan",
           "score": 24.1,
           "tone_24h": null,
           "tone_7d": null,
@@ -1904,280 +1806,376 @@
           "ai": 35,
           "headlines": [
             {
-              "t": "China Warns of Plague Risk Near Russian Border",
-              "src": "NTD News",
-              "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxNdDE5SE5nQV9oNlBnOTVCRkhRdVEtUTlhNmlGRjhLcnducW5CQXFFYkVWQnZITG0wNGhhMmFib2JTNnV3SHJPM3BXSXgxUDFvTDlfYk85cURleGRDY3pSUXAydHAtMGJJcEp0MlFWb0lPNmhNZkY2QzJNeWdoUi15VTdCVEVyOURDQVhqX0k5Yw?oc=5",
+              "t": "The Abject Failure of the US–Canada Trade War",
+              "src": "Intereconomics | Review of European Economic Policy",
+              "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPdzhEazItUkxiTGVRdjRQeUV1V3ZjTm82WHNocFlVeVBHVmJIc2VUbzlqS0JsWlR3c2ZlVVVpMFZYcnd3WXRTMVR4X1oyMVZSUk1mTWlaTl9DN3JpbUJPbE4yT2RrNjVNZklOUXFRNDU5cDlsQXVQNmU3MVpycDhDZnpCV3hWemhUVVZQUU5iYXhielpkRktDS2dwYXRkanVaZlZTWTUwZnZ5VUNmMjdYLVJScXRJZkk?oc=5",
+              "age_h": 0.5
+            },
+            {
+              "t": "Donald Trump’s approval rating: the latest polls",
+              "src": "The Times",
+              "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPaWVoQ3EyRWxHRV9HUGVDWi1SQzZ2ekp1RElTV3dtZ0c2UEFiVG1QUHR3V2J3ekNOMW12VjQ4bVp2eC1iUHdBZHJPTzZJRHpPQ3lSdC1vRDRGN2lyS21ONktWZEx5RWFhTjRFWnFMZ1BkTGtwX0J0bnl5TkVnZ2JEU01TeUprMmE2V1oxUVktVmJ6SEdkc1hDYjY0VEtlSlRJYjBLdENIWE9mQWdJa3hjQldHM3N3dw?oc=5",
+              "age_h": 0.5
+            },
+            {
+              "t": "Democrats say Trump’s trade deals were corrupt. They’re gearing up to investigate.",
+              "src": "Politico",
+              "url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxOaVlYNjRqOTI0Z3hWcFJ0LW82M3lUN0N5N3IyUm9QQ3ZKdjFuVlFOSjM0YTljcV9VbW5mUG5FU2lUODYtR0FhQTFzMHhneHNiWmFjRmpSVEJJMHNzRy1TWklqU3hQN2FKam00ekxEd1djLThpc041bUN0dkxuUl9KTk90ZlYza0hRMGMtZTlrQjhKQQ?oc=5",
+              "age_h": 0.6
+            },
+            {
+              "t": "shownews - EU delivers record sanctions blow to Russia as Trump tests Western unity",
+              "src": "FW-MAG Future Warfare Magazine",
+              "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQMEF0eE5CU3A1S0NLV3FsVGVScHpQbTJQUEtUMWQtd2lRWXI0c01fU0Ffb3QtOWVUdUFkYTFBcEVBM1BFRFhTb25EUjZqdGhabG15LUNzRnk3SGY2aDVjUjhCY1NTWWxOMU1xR2gtLWlyTkVvVTdSdUJLZDZwWUhkcFZzZ0UzRzNOZFlGX3RldUQ3WTgyUU5mdGlWc0ZsRF9rVjhfSF9WZUVoUTBnY1E?oc=5",
+              "age_h": 0.7
+            },
+            {
+              "t": "The Twin Evils: Unaffordability and Corruption",
+              "src": "Robert Reich | Substack",
+              "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5GUEhJR016akJoelBQVFNYZjNZUWVZd0N1bDY0QWFhV216R1BfaGVQZXZFSkpnVV93Zkk3LUcxNEVjcGFtbTB6cjZ5blBRamQ2cXVTTFg1ZnBSV3F5V3l4SUNsdEdTcDRN?oc=5",
               "age_h": 1.3
             },
             {
-              "t": "EU and China agree to restrict exports of Chinese hybrids — The Express Tribune",
-              "src": "UA.NEWS",
-              "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNeDFLUkZJMUgzX050TmxJWURLVUVkOTRtQ2F6QUxDWXJQQUJlZG1Ca18zalZZdmlWXy1YMy1lM09zeDQwLXktSGJEQWtiLU9WeFJoTERTLXp1RFE5SUhYSFVONWhjVjdGSnNHNm9LSnVUQXRLdkp0a0VSU3VrZTRtRlF5N05qMjBzTmI5dElIaXFKdlF2TnZ1WnVaVUZrLXZKUE0yWGhyaW12OXVU?oc=5",
-              "age_h": 2.6
+              "t": "Trump WH sends mixed signals over response to European sanctions against Israeli settlements",
+              "src": "Jewish Insider",
+              "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNYUNac29IaGxzeVNXd2gwSWJtRlJUV2VXallHampMWTktVzR1SGcyQV9OVWZ1cDI3V1R4bEZTRS1ZWWxTOHZNTkJNLUR3X0ctY3Q4LUUwSTh0UGl0WXVfSUFLS3Q2S0cySUgwMkd0TDlMb0NvMFJxenJGN19BX1JMdEhsc00zNG9XWGFLRFJvTXVocDBiNFpvZjRzdkwwOFJhY2x3?oc=5",
+              "age_h": 1.7
+            }
+          ]
+        },
+        {
+          "key": "russia",
+          "label": "Russie / Ukraine / OTAN",
+          "score": 51.3,
+          "tone_24h": null,
+          "tone_7d": null,
+          "vol_ratio": null,
+          "lex": 62.7,
+          "ai": 45,
+          "headlines": [
+            {
+              "t": "Russia, Ukraine trade accusations concerning overnight strikes that killed at least 3",
+              "src": "Anadolu Ajansı",
+              "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxQc3REUEs4TUZHblNyNEhhVlRQNzRFaGxLRTBDSlVlNUFGOHNHa3V5TmpXQmtKWUxQckhkazRjeVdFSVZpWk9PbGF6cGRFeUkybE11bEFrb0xXeE9ZU29KWkV3eW5UejRYNUZVMjJPdW5ZSnhLSHF5ckNyVmtPeEMyMmlGYXNTTGVrYmU5VTRLd3hocXpmQVZlSFFZcXc2MmFxaFJHN09KbnMySTRqaE4xN2w2VXhoczduVUJqdUVyV0I4dFpEbnJtSXhWZ0o?oc=5",
+              "age_h": 0.3
             },
             {
-              "t": "EU-China Preliminary Trade Pact Targets 50% Cut In Chinese Hybrid Exports",
-              "src": "BW Businessworld",
-              "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxObThEUVY3bkk3bEJuaElNN255cEg2WU1QQl9vbkRuaW5aVk1fOG1ueFlyNGstcWVzRDBZNjNkVk1GVXBuUnZlOHM5SW41UWw1OWw5cWhtSGxOZk1zRnl2TU9lU2p6ZnFQRkpzSXpEejFkRVkzc1hET2EwOFJNS1ZnOTNCSXota09oNTNLb2l2aFNBN1FiQ01oaHUydVhNaGxheVhlNHREbzhZeW13U3FlMW01MFZaMU0?oc=5",
-              "age_h": 3.8
+              "t": "Trump proves himself a diplomacy disaster with latest shocking Ukraine war admission",
+              "src": "Indy100 | News",
+              "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTFBYeGF0amdsMmRDUTBEbVcwakJ3elMzUTVVcXhHU2VodXRJQm5kb1I3WlNCUy13U3NXaWtfbkVvLVpwUU1MeVNDOExUS1dFbWhfdzFnbTNKam5ZWmlTVk1UYXAycGZtTDAxX3o4alNRcUhlVUJCWVFSeW16WlVhQQ?oc=5",
+              "age_h": 0.3
             },
             {
-              "t": "EU-China trade talks grapple with tariffs, rare earths, and export controls",
-              "src": "The Brussels Times",
-              "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPd3JHME9YUnBPM3JCdFRfVDBFbUlVTkVhbm1qQjd0Wkd3VFdKd2Rsb1dWVGRnNjFLZGYzY05oT0RsWGxiclVCRlF2cTc5Z0hJMmxuQUd1b0lIdXdOa2x1QVltWUt4RDdUZkItWUF6azV3QjZZWWo3SmF2OWw0UFVsMnVfU0U3bkNHNGNjMHRkaTZhY3BoTk9GcjRydHNid0hSeXNCNE5fZ1lxVDRiMm5Ed2FVZnF6eDFOYXhzNG4tcw?oc=5",
+              "t": "'Another front' of Russia's war: EU condemns ship attacks off Bulgaria",
+              "src": "Türkiye Today",
+              "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQbi15eXdfdVhGQ3ZydW1hb0F5dV8yeXFGOVJfcW1CYjlZam5hanNDYnVSSFhkRVo4dWcxZTYxZ1JhV1hPa05teFRscDY4bXR4VkRoZldHYnBqeUN1YlFCSVVPZWRGMnc1Zl9GVGJWeHJ3emV6MERZdlljd0kxRE1OeXJuVk5vdDNnYy1QNmRxX3BnSFBkNndlX3pvRlZMQWZWaWoyNzFBR1Bua0ZkZFE?oc=5",
+              "age_h": 0.4
+            },
+            {
+              "t": "MS Amlin ups support for Ukraine war-risk facility to €130m",
+              "src": "Global Reinsurance",
+              "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOS3p2d0tybW0tTG9iSVFrZkszTDFfRGxxbkZud2FteTk0bXZqWmcwTjdyZHRtWG1BQjFKamhBcDR1WVFpQjRxS0JVQ1BLZUZPRnBQZlhpbW5jc3c4WnRIOURvVlRWS0sxSFJqdXY2bmhoZ1J3TEJsaW5aeEJhQWlKNFZpZnRTa19SNHVUR2RZcWlhSktuM3lJRnJvbGtsbDZvMEhaZmxqNmtOZXhnVE9EQXowRQ?oc=5",
+              "age_h": 0.8
+            },
+            {
+              "t": "Aon, European Bank for Reconstruction and Development Expand Ukraine's War Risk Insurance Facility",
+              "src": "marketscreener.com",
+              "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxQZmN4UWJMMERJN2lIZkRlem9qYmRUWHlFaTBLRVFEbFhtLVJFcFVjWVZhbEctOTNpYmZXalk0RHRyS2FFZ3Q1RU0xOHpuckFBYk9JNFRsM1FGSzAxbDMxZ000clF4TTNDS1BsOWpRWk12SmNKYVYyN2FZVGtCZVJ5MmNxNUg3ZHpmQk11QXNvcTllM0V0RjJySC1zQzFNUGJHTWNIOFcyMnppTUVQWWZWREJQVjVYRXFXWm5ISTk5VklLYWtLUXZSVUVmT2lOM3o0dmZTemtDUEZtRnJWbm5PbGo1ZTU?oc=5",
+              "age_h": 0.8
+            },
+            {
+              "t": "Russia Ukraine War",
+              "src": "GazetteXtra",
+              "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQcmdZUWVDZHNyVmotUjRxSU9PNFRDQU5JRnM1VTRnazlzMU9XWEN3ZnNadDBuQWt2SDVERWxHSHZHbUhFaWxSTmVaUmpqZHdnOEpwT2pfMkREdGF4WUprd2RVMzFnTG51SjBnZ3ZfSkRrQnByQU5fbWRTbFBQRldsVmVKRjM5VFh4UzJsT0JzNlRhLVFLc3BZU2F4V2RwTnZuR0h2WWQxcFZZb3I0czJTSnNR?oc=5",
+              "age_h": 1.1
+            }
+          ]
+        },
+        {
+          "key": "china",
+          "label": "Chine / Taïwan",
+          "score": 50.1,
+          "tone_24h": null,
+          "tone_7d": null,
+          "vol_ratio": null,
+          "lex": 50.3,
+          "ai": 50,
+          "headlines": [
+            {
+              "t": "SA factories crater as China imports stunt revival",
+              "src": "Moneyweb",
+              "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPdk5OTW5RY0I2Q1otdm9qdlNNcEd2NHdfanJ1WmRTLVRfVFI3dzhxdWFLdHlXaG5HTngzZlJ0Z3c2VE96bTFnVVAyenUwQkg3cU5zcEE4U2QtVTJwR1VHTE53SVZKRHFJV3ktbUZVaXYwcUFiUjBwVUo5TTNZSEFqWHROMTVsRjl5MThaMFdYdm4yVHVoTlpqczRqV3Y?oc=5",
+              "age_h": 3.4
+            },
+            {
+              "t": "China imposes an additional 10.79% tariff on exports of monohydrate glucose to Pakistan.",
+              "src": "ChemNet News",
+              "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE1sV05PY0FiYWNacHYwQjBZQXpBdzlyQjhBZGtpd2VRdFc5OWd2UmtRYlh0OExRU3RKV0FSeVZNMk5Nd3VyM3FWLURITmtjdFJ2d2c?oc=5",
+              "age_h": 3.6
+            },
+            {
+              "t": "There is no free trade agreement between China and Pakistan, and tariffs on 28 types of chemical products exported to Brazil will be increased.",
+              "src": "ChemNet News",
+              "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFBCRXdadzdfSmJDNG9CcXRGcmo5ZGpKeTZDUVZJb0ZKdEhqOVhJRFpnOFJBMEQ1eUd1M0dFTmFIQjF0LVA3ZlZLMUhRZ0RjUk9qTnc?oc=5",
+              "age_h": 3.7
+            },
+            {
+              "t": "China tariff impacts leading to lost production days at beef plants, as cold storage fills to capacity",
+              "src": "Beef Central",
+              "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPVkxSLUR1d0J1T0hBa3p2dXdEMXhhclRaVGdBdXQ5Mkp1ZnZJaTJoN2pIT2ZHWUhxSElrT3BWRElWVW15TGxZbHdva0hOb0dCSWZhTTRoT3RGc19BZjhDbGVKSUsxeEM5UFNONGVFLXUtTTBIaElPcjZnSTlXcnh4N1U4SjhSdUxkdEdfeWRvLU5sRzJyRENPd1ZfUk1VNGFqWDlxNVI2OWtrdm5SOE5OcWdNem0yWWluVm0zcEVVckRoX2wxSWZOS3dFQ3dZcklp?oc=5",
+              "age_h": 4.6
+            },
+            {
+              "t": "IMF Flags Impact Of US-China Tariff War | World",
+              "src": "Ommcom News",
+              "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTFBPM3FaN0N3MWstRW5BUzdmVHR1cUNhbFo4VkE2d3FrbnNRcGlvWG95aG51ZHhic0kzU0pmX3d0UDNiTjdMSGgyZEVndElSczZIakV3alRaZkp2d0JIMGxIU1gyTHdkMDcwd3VRdjRIbFJwd2J0UW9XeEs3U0o5ZzQ?oc=5",
               "age_h": 4.7
             },
             {
-              "t": "EU curbs China hybrid boom",
-              "src": "Borneo Bulletin",
-              "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBHMU01cXZ2T0RkZ04yY0stZUYtbHlpQ1dSQXllczZaanhZN0pGdWNaVVFzbWNUMUFhS3ZvaV9jRzVpNnhCRXI5eHc4bHczcGNibl9FQVFhZ2tzSXFmWnB0bERZNWhJcWsx?oc=5",
-              "age_h": 4.9
-            },
-            {
-              "t": "Europe Is a Huge Outlet for Chinese Manufacturing Overcapacity",
-              "src": "The Institute for Energy Research",
-              "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxPV0l0OXhzYjB0anJVMTBpWTc1RTV1enMyWFltWExqMlhMNk83azEwdUltQTFPSVJXYTVFZHhBU2Rvc3RjbUVpNlhKMWxERHZNTThzWjFYRGNwUHFKVVBJS3ZmeWFycmQ1Z3FHTVo1Z0YyRm8xNDhRNTFhNXNNa0N5LWdMd0NlNVFJVkdoSmgtSnM4eHlUX09xcnJOLVNiUVluR0tVb0RpVGQ3YlVveFFtUnptVFczRldFQ1dWdWlXakNjRVVpdWc?oc=5",
-              "age_h": 6.8
+              "t": "China Warns of Plague Risk Near Russian Border",
+              "src": "NTD News",
+              "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNSVpIcEFQZ1FfR1BnTlYtMEoxNWU4QklydWRnYThQOGFPdFg5X2FYNG1TLVpRUDZFTkFnaFd3VFk1Z0txMEw1TUZNcmhHRDhTQnVfN1plY3F0Vkt4ejRNejZVYWQ2SHE4SjFQM1FyQS1kUGxJZlIzQ1dYdjg5Y3d0M184VjNaazBWeHQ4ekhaTHQ?oc=5",
+              "age_h": 8.6
             }
           ]
         },
         {
           "key": "mideast",
           "label": "Moyen-Orient / pétrole",
-          "score": 35.4,
+          "score": 47.6,
           "tone_24h": null,
           "tone_7d": null,
           "vol_ratio": null,
-          "lex": 0.0,
-          "ai": 55,
+          "lex": 16.2,
+          "ai": 65,
           "headlines": [
+            {
+              "t": "Trump's oil jawboning loses punch as wars spiral",
+              "src": "The Economic Times",
+              "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxQVnZETzZNa00xOWhYQnFOSDhDanFBOENOTTdwRDdPR1ZGbDlaN29EcTNQVTRkQUt4QVZ5RklERmluNjBIbFhJZDBDeUpoWVVnaTBEdHk5T0lSR2FIQ3dyVHF6c3QycGRnZG13TkV3Y3B1WmZ5ckZlMkdYZlBJbVM1cEx4NDNwa2tlSDVMU3dIWG1UY2NteDNqcFRRa0M5elB3LUVIR1lCYnhpQ1JwdklyYUtZa2JvQnVndGQtVW9CaGNUWXPSAcgBQVVfeXFMTjZwZ2c3UWRFX3ExN0VveUlNZmJwQ0I0eXB2YXlPR3VueUtrRkFJRjg5S2U3UlhfVEJ2WFMwQkxQQnFkUFJ2LUNDeXJxWXdUTFVScldRT0pDZDhPczIyakJRSlMyNXdjeGJ4dXlkOWhUOU9Nd284eUxCSUFEMzFaNlI3MzZIQWRKTFNLYm5GVEVqTFNoSXVha19RQWZ3VHl5YVN3Q0pKRzhMcVpZU2ZvWTBSUVVJWmVGUU9ITzh4NFBKZEtCTEptOXI?oc=5",
+              "age_h": 1.5
+            },
+            {
+              "t": "Brent Crude $105: Iran Claims 3rd Tanker Hit, Bull $114",
+              "src": "FinanceFeeds",
+              "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNTTFJMlVRRGJBX2ZSU3d6VFpNWmcwRVYxX3VvMzdPTWRUOERLYVA0dDhQU0Z1d1BMMVlnc0V5UXFKQWRoWGc4d3QxbDY3MmxxUUlzeW45d1gwNDMxaHg0elU0UC1PVFB6eVdrOVVkNkVOaHEtLXdwcHd5UWdzWEpsbmhqRjE0MExBbnBBNmU5cDZVV1hNT1NKQ1dYVVlVeFVTT2dkVQ?oc=5",
+              "age_h": 2.5
+            },
+            {
+              "t": "Crude oil crisis in Hormuz: Much more than just price and quantity",
+              "src": "The Economic Times",
+              "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxNXy1iYXJWY2FfV2FzOVpQeXZWVUIxLVp2c0lER2FoeGVxWGxPM2hUR2o0aHlkVDd4NklKeGYwcjkxUk9CSnFTSTh2dl9icm95STdINFJTV1EyYVJyNDRKeHhFNnIxRlVMTFNPLTMyWWFBX2FyQlJJcmp2c2RMeVdGMldZTEVYNE5Ua1JjVm5VZDRjUDJkeTlkSHcwc2hncGVSckVaQUVnLTlFczdmNVE2UlJsTmRTT0g5V1hYMk5JSGJxNFNXWEhQbEVXUTVNaDctVnZtcko2Z1DSAd4BQVVfeXFMTzJ4aWFLLTc3VnBxVV9HakJpRTc5WDkzTEdUZkpxS3ZGbS1TSDBmYzNSaTROaHNNQ09NZE1MS1RzSUxoc1NjSDRYbXF0VWRZcFRjOVZ6aHNIM3JrSWpjby00Q0ZycGc2TG81UURkOERGNDIzNXkySWJLSGxIQmZkeHJrQjJ0TUY1NExpZVlJbkxhdWVoVEJBUVRDMDJ2YUtUNnhsa2RDbGtzNnZWeU84SlhQZ2t1UTVHemdLaVA3cFk1YXRUWkVReHB3NHIybFliLVBoNDhwcy01WVhuNTFB?oc=5",
+              "age_h": 2.6
+            },
+            {
+              "t": "Iran war live: UK advises against non-essential trips to Saudi Arabia",
+              "src": "Arabian Business",
+              "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNeGVzSjhrbUhOTTctX0ViTkJTRnFEZnkwNTJQR3gySTJRQlk3aXNwenJ2Qk1DejVYcF84dmF4WDFPd2xKRzEwazEtOEdOb05OOFhJaXZQVTd3R2lDRHdGbTgtM1JSSEMxeFN5OTlLc0tLNE55MHlHRDZNU3lOVFBDaTJwQQ?oc=5",
+              "age_h": 3.4
+            },
             {
               "t": "Why have US-Iran talks over the Strait of Hormuz hit a deadlock?",
               "src": "The Indian Express",
               "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPclE2a2Mxc0c2OVdZRm1kREtKOFNpVUZuZEp2T2FKUDZFbTVQSGxPMVdVeGVVbHdCZ2NvcndNRjJGYkVidjVrNUJoWGNNYkpyNnB0SUJ3SkRLcHZKN3J1QXh2QWRlZkJiN0t5MDRaSUpBQWZNMlo5Q0pnYm96S1lXdmpTMktRSWo5YlNqdzdZeW5ERTA0VzZlN2tKNDRxNXVnbU5CNTFZTnhGN3dtdmRVcVN5RGdyUHJaX3fSAcABQVVfeXFMUHBZaXlCUHN6NjdWc3pPRlhRa1pxVEpRQ19aM2lDek96dHJXNVdCVGxiTWJ0MHBtbkVRbGpfYldjSVlQUFgwM3haNjgtTXFVNUttWVp6Q2ktSkpiRVVONmkybGZCZ29zYnowbDhvckJja1hmWGdCUUUxa0NDTkJRM0xkYUVXM2dJNkVkR0xuTFNicG5MRmY4NlRtZE5sdjkwUE1jWkZzR0hkZUZobUZWYzFuS3JWNXlKVERoOGVxOEVw?oc=5",
-              "age_h": 0.4
+              "age_h": 7.8
             },
             {
-              "t": "Bitcoin Falls 2.2% as Oil Prices Surge on Ukraine and Iran Tensions",
-              "src": "TechJuice",
-              "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPdVUxUV9qTHRHeVFYVHo1T1d3Z1d1SG5ta2JIUUFsQVRHZFZ0VmhwLUhUblFlbXcyUW5VN2NjNUwydG0wSk52aTcxRXJwUEI1WWYxXzNJYUpkZGRQQ1VGNE4xeGJ0VHdHVmY3dm1uS3dQb2JYay1xSG8zY1JUMVFidTYtMnJ2b094eU9MS19VbHdEOVFjR1lr?oc=5",
-              "age_h": 1.1
-            },
-            {
-              "t": "Oil Futures Little Changed as Market Weighs Export Recovery, Shipping Risks",
-              "src": "WSJ",
-              "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxONUtscjBad2NrYlFpckhZRUc0SUFnc3YzYjhqenRqaHlUUHE5Z1BpVGJlRjZWaE5BSzZxUWtoNnFoXzg1VVd5QlNWY3RMLVBiUW1QUXNaTUFBMExBMTNEaXQ3bU13QnlfbUJScW5yNUJDQTJ2SUJXMmo3NXZyOTBtb2FNOThkNjc1ZlgwU3JGRkRSclhaS25UQjk4QWNiZ2Y2bkpiMkJidk1LakNnTmNodTVYN0Q0cTg?oc=5",
-              "age_h": 2.2
-            },
-            {
-              "t": "Oil Prices Rise Amidst Strait of Hormuz Tensions and Asian Market Fluctuations",
-              "src": "Ratopati",
-              "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxQYUE2X0Z5UlJSR3gtUnMzQzl2c01XczI3allXTU42eS10emk0U2V1X2VsSHVVWkpRUVViRzBxQjgwU2lyRHdvQmtKeUhUTDV5ZVJTYm5vZkdBUUh5bEhKaHhzOVJIYlFnWXN1WHdBdEZVcWF6a0xsaENHdlFSZEFYV3A1ZXBZc2ZvOU9VMw?oc=5",
-              "age_h": 2.2
-            },
-            {
-              "t": "ATX closes higher as Lenzing leads 1.0 percent rebound",
-              "src": "ad-hoc-news.de",
-              "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxOSWVsS1NQVHc5NjZDRXpSSGNWX29ZN2d0OXZEblBISjdkQUs3NzZmRkRjc3lmSTFHenEwUGJWWmhrMFJVa2ZwbS1ma3lMcUdab2V6bWRfcXFkNzR1ZnMxTldSdVNuc3UxTmgxbUNLSEdaZkFvMldrSGlxSWxVY0ZZdnZWbGlaZFloMExwdzVYMTVpaGl0c1Rsc2Z4YzFnNTNlWmxpYVNZeDFaY25jUzZXc1RaYU90c0k?oc=5",
-              "age_h": 5.5
-            },
-            {
-              "t": "Oil Prices Drop as Investors Weigh Potential Hormuz Deal Between Iran, Gulf States",
-              "src": "EnergyNow.com",
-              "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQWGRSTEMwSXduLTVLZm5YQ29MWXpnN1NxV24xaTBSQWdSNklMS1poM3pfVExvRWZPZG55bU5XOE43djM1dEdoUHQweFJZck9IaEZka0hiQnBJN3R0VmNpRE5POXRfSXRPaTNmaW9QNkFpYVRnSVhkNW1XTWJLajhQemVFQldxVUw1azR1VHpLLXVWdE9veTdrR2MxSXlmM2Yyejh4X3lTWjljVkdWSW5wUzFR?oc=5",
-              "age_h": 5.8
+              "t": "Iran Guards strike vessel in Strait of Hormuz as oil soars",
+              "src": "The Daily Telegraph",
+              "url": "https://news.google.com/rss/articles/CBMi9gFBVV95cUxQOGpGdWFnVi1DWkVjUS1DZktVTjljalpiNUdKclFSQ2lxVEw1Z09QMlg3X3lzRkwxQnlqMTktWGZoNEhpMEtFSlNoc3FxTnRwVEZSM1BYWlJ5bDRkQVdMZ2VwNUMzLWhDVzV0RXdmM1E1OEFSdU5NTm1BQ0VTZGZXcXktYVh1ZUo2Qi1uamVER0NCSjFnV0JjMWhWeGlqdUlNTEpHZlA1TzkxaU93RWxXSmRsajNGUFB4cHJTRi10T09QQnpuUGNVaHRYUW0wVnJWOEhYcTZ0Qk5ESW9iRHg4Z1VQaExVVHlnN2tCdVh1dEM5QzJEMVE?oc=5",
+              "age_h": 8.9
             }
           ]
         },
         {
           "key": "fed",
           "label": "Fed / macro US",
-          "score": 48.0,
+          "score": 51.0,
           "tone_24h": null,
           "tone_7d": null,
           "vol_ratio": null,
-          "lex": 44.3,
-          "ai": 50,
+          "lex": 43.8,
+          "ai": 55,
           "headlines": [
+            {
+              "t": "Today's Main Economic and Crypto Events: US ADP Weekly Employment Report Due",
+              "src": "bloomingbit",
+              "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE1TN0ZVcThDN2ZfUzRTTmxUMXE4NjVUUzJfczY4M3R1T0xQYVpNRUJ5c29nQ1ZOS1BvWVJsNTRzWGFJUGU3UHR3amFyT0NZQ1JQWlAzNw?oc=5",
+              "age_h": 9.3
+            },
             {
               "t": "With CPI data and Fed Chair Powell's comments taking center ... - Futubull Community",
               "src": "富途牛牛",
               "url": "https://news.google.com/rss/articles/CBMirgJBVV95cUxPbE5HbXN2ODZwRXJEYjFaeFNIY3FhOFl6YjVKUkNORDhxeHpZUmNkNHZIV1NMcWlENjFwbzQwa3VTci0xWlllRUU0WWdqb3doSkZ5ZnQwbU5TZG9ya1pONUJySmM2d2x0OGg5b2x1MG5HaXBSZ1hNbG1TVTJweE44ZFE5R2J0eTgzZlJ0ODAwMk5kbDA0UDhrRWtQNld6WTRYNU5aa1lOUEg1Wl94V3JuOTJFV2tEc0tWdVl0MjMzS2dPLVJPeFk5aXNWVjJLcmRkZXZaZ19yTW1YZmFhbU9reHBLSW1PTUpGTHp1QWVZcVlxd1VoZnozaHFNanRhX3FCUG1IYkZHbUl0S0JDTzhieU1jUzFDUHVTX25jV3lPMTJIZkI2LVQ3TTdfVEREZw?oc=5",
-              "age_h": 3.8
+              "age_h": 11.2
             },
             {
               "t": "Bitcoin Forecast: Last Inflation Print Before the Fed, and $82,500 Is the Level That Decides",
               "src": "CryptoTicker",
               "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE1pZGR1YTR6Vk9GcWtLNllRZ3Nwc0NpR3hBNW5QSlhXZzE4Z004SXpsS2pYeW9yRmhvZ1g3SjNUb1NDMVNZREZSXzZVYVp5ZzIxT3lJUlVoLW5UVklrcVV4TnFERjltRUZFTGxLQjlnbWFNdnRkUGxyRXJUZGRyQQ?oc=5",
-              "age_h": 7.1
+              "age_h": 14.5
             },
             {
               "t": "Fed officials are warning of more pain. Many Americans are already feeling it",
               "src": "Houston Style Magazine",
               "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPQXNIZERCdF91V1V1aFl4TDZmdndzdDU0ckJ6Y2NLLWRqVm9OTmFTTzRnOC12VFI0NDBwUldjdzVLcVpDTV9qeGI3MUZCa1psMUg5NjJtUDc4aGR3dmhNUFA0SzdJNl90alh5OUFjZ0xZV0x4dzREYW1DV3o0cnA0UHhTNEE5VWdQU2pqbHVCa3I1eHZuOFB2NnNlM2ZkX3RzSzdjUlB2QzZaZzVfYm1OaXZzaVlsS3UtejZsMA?oc=5",
-              "age_h": 7.9
+              "age_h": 15.3
             },
             {
               "t": "Forget 3% US Inflation. It’s Heading for 4%: McGeever",
               "src": "EnergyNow.com",
               "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxOcmJPa1BsVFFXUktudmRKOEhhWk9NR0VtWFoyckpfaEx6MUFnUkc1Ym4yckFXU29ERWd2NVlhbXB1ZlRtdTdxREE0RWprLWFsaVkwUVdUcmpxMVJJSVBwY1ZrNUFGWGJQSWgzN0hwMHhVY3dEcXdUNUgwdEM4ZTZqV1BXdGpzdw?oc=5",
-              "age_h": 12.6
+              "age_h": 19.9
             },
             {
               "t": "Fed officials are warning of more pain. Many Americans are already feeling it",
               "src": "CNN",
               "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTE5KOEVDdVNYS0FUZGlpbEJTYVRMT1U0MzE1ZVUzM1pfcjdIeUhJN1ExRm1oYWZzR0lLcU8zYVJRZkI5dm9wckNpWkplUnRVQmhqUkFwb1hSN3dEbTl5ZFJOTkthcWYwYWh0ZjNBbEtkV1NDTUNnOURuVw?oc=5",
-              "age_h": 16.5
-            },
-            {
-              "t": "With CPI data and Fed Chair Powell's comments taking center ... - Futubull Community",
-              "src": "富途牛牛",
-              "url": "https://news.google.com/rss/articles/CBMirgJBVV95cUxQT0Y0U2x5SjdNLURPVEhLTHdzQ1NtUWg0VVJtSFFFRF9NdzVLa0hZX0NmNEhoczVLREhMQm9EZ0tqMjFaUk9WcXAxQW1FYUVIZTF2RlM3VncyWkxRdm42blJ1T2tpWmtrWTVXM3htdVFsSDZNMXFNWlR6NThUaHhPSDlPdFFTTms1NzB6N3Nmd1ZlZThtNU1ZUWhkQmVFLWJaUU5LeHVuVFh4V3ZJb0RLTlpvaldlUjJyRXF3QVBxbzhGZjVtd0k2a1NJT0p6cW9SUHdzSllFUDVfQXlaYWJiR056RE5yOTNseVBXcWhEZWpDVkZaNnVCVTE0cVpvMWR6c3ROR2VkS3NWakhncmJReThPVno0T0FCdW42Y2ZfY0Z0WElCTU4xSTNSTzQwZw?oc=5",
-              "age_h": 19.8
+              "age_h": 23.9
             }
           ]
         },
         {
           "key": "crypto",
           "label": "Crypto / régulation",
-          "score": 22.2,
+          "score": 37.5,
           "tone_24h": null,
           "tone_7d": null,
           "vol_ratio": null,
-          "lex": 35.3,
-          "ai": 15,
+          "lex": 60.0,
+          "ai": 25,
           "headlines": [
             {
-              "t": "Deep Dive: RLUSD Moves DEEPER Into Institutional Finance",
-              "src": "Santiment",
-              "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNWFhCUXNSdHBPcHdLdnNUd3Z2aGg5WG1YdlBWckNpTHZUTXBRSWZCOXFYelNxVTROS0xhTG00WjVXNUhLUmI2cEV5d2JOdUNibHJsMG1NSm80OTBNR1BNajI5bTdZUmJTODRXQ3V1VVhNZl9ya191ektsX2RYQnJPdS1DNmxHUnF4b0UzV1A2bmgzNFJvN2dBeEhJd2V1V1RPLXVv?oc=5",
-              "age_h": 2.1
+              "t": "Thailand approves Bitcoin and Ethereum ETFs on its stock exchange",
+              "src": "The Paypers",
+              "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPeXhFd3dpdjJBbVZqQ1ZZM1RJeXgwTGh0allTRnN4U0xDSWZMNkp4N1FWLXN1WGxaNkR6MEZ1S3A4OFNUTkRUSXZoWU5WX3ZrSkl4YXdMQ2o0dENNQzlXTlIxeVpSazkzbnRXUUFUb1lhWVd1UmlkUTdQOXFXX3VQaUd4dVRULXBibWJBQVNnOWUtNS1xMVNTZkdGRDdNYXhOMS0weGxzTVVUbXU0SVgxSkZ5WXE?oc=5",
+              "age_h": 0.4
             },
             {
-              "t": "Standard Chartered brings Ripple’s RLUSD into banking custody after $765 million quarterly surge",
-              "src": "CryptoRank",
-              "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxQS0ZISXhMTkVPd1QxSEE4bEFXS3pmQzEyOVdlZFYtRHpHV0NoeW4wVldfSlNia1ZzbFhjVFlGWGtGYl85eFByWkhUazRfZENFZ1F0bU9VZzJmenozX1FYVkctemxTSmdBbXpteWhDdEpSSDNHWEV2RlVieWk0OXFqUnR2YzdwRVVoVkdMYW5KMTdpZzQteWhUN21ESWlTOUlFSzBER1hTeGp0U2dFMnBwSFdmczh4SWZpOVlXR29WcmUwc253Qko2NEc3cE8?oc=5",
+              "t": "Stablecoins: FSB Finds Gaps in Global Oversight",
+              "src": "CryptoTicker",
+              "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTFB3Smt6b3l5Z1hQU1ZiUWNla00yZ2UtR0didWNNUm1YNWh3MGVvbFp2Y05GMWs5WW5FV3ZFNlFDOWttMnNZNDR2NTNZcmFVMlFXWWZPR1N4OFIyaWFvcWlHbzE5aXBSdEpIVjU5Yi1qY3VZbnN4c1hWN3JSSQ?oc=5",
               "age_h": 3.0
+            },
+            {
+              "t": "XRP News Today: 3.27% Price Drop, Ripple Deal and ETF Warning",
+              "src": "Coin Gabbar",
+              "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPa2tLN0xHQUE5WVlEeWdIc3h5MUdneXQ0OXg4Y2U1ZUtnSml2T0l1Y1BuM0o0dERIMXN5Y29VSGIzZGttdUpXakYtWWJqemFULUtKMGw2cS10OTNBNkcwMjFjSTlNTjJFUWZNZUdnOVpXRld3UmtNbHRBY1hUdUpmb1VQRFc1YWdVUzhLT29XS0ZOUnF1?oc=5",
+              "age_h": 3.4
+            },
+            {
+              "t": "Mastercard Launches Crypto Program With Binance, Ripple, PayPal",
+              "src": "CoinMarketCap",
+              "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOdS01anhjSFNFdGVoaU5QLUdxUjBWSnAzSUZ1YlRSM0U0b1BQWGhjZUZxVjBKcWR4RlRqRlhmckFXSTgyWTRWQlYzZWd6UDdGTWx6dGJsR0NibFN3NzFVTXNYY3Bad2FGWG1nSXRaSXQ1bDVqbnpMN1E5U1JXZ2FRdGxSQ1pFVkJZaFB3aXZBS0R4SXVkSEp3M3Q1YVVYOElWM3hMS0NB?oc=5",
+              "age_h": 8.7
             },
             {
               "t": "Regulator to allow crypto ETF trading",
               "src": "Bangkok Post",
               "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPaHlaMjJuN2FURkVKSW9RQkd4Zl9jR3FPTHFiQURyS1RqdVkycXgtVzFvaHRBRTFqY2RRUHAycjUxVXViZXY5Z192RTJFSk1rWmtHeWFhWTZmZ1NVa2RaanZxcHBEOEtsRXZJeEJBdnRKZ2tvTWtKRXRETmNTdTZTSVRJMnU5QkZRWWk1dl8tVVh0VGVD?oc=5",
-              "age_h": 3.8
+              "age_h": 11.2
             },
             {
               "t": "Standard Chartered Will Hold Ripple's Stablecoin in Dubai—And Let Clients Trade With It Without Moving It",
               "src": "Decrypt",
               "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPSzRNdXBERnZDQjZCeUxCa1A1dWpPc21Rby1tMXI3YXZPWEd5Nk5MdGZUdG9OckFmeFRZdlN6MUxWN2RnT2hobWFEWkFYVS1ORTRiVGQxbFJQbUtWd1Y3MUF0WjRla1dSTk5WN0FuZEs0SUlIQkZLc09yQnJpRnVBMUlYaVNWQQ?oc=5",
-              "age_h": 4.8
-            },
-            {
-              "t": "XRP Is 3% of the Crypto Market. Ripple Has Spent Years Signing Bank Deals to Change That Number. Here Is What Moved It Instead.",
-              "src": "AOL.com",
-              "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE4wWWJFVEhuN1BDU09IV1U4ZjhQbWY0NTkyRlZmU1FvTk0wRXJFaWYxbzJUTUpfS3pqSjFVYTM0ekkySjItaWI0VXFrX2MxNllBVnJGRXg0c3Q1Zm1HcUN5d1R0NFdlTWFSNU53aGg4ekM0eTNhXzdfMUNB?oc=5",
-              "age_h": 7.5
-            },
-            {
-              "t": "XRP Is 3% of the Crypto Market. Ripple Has Spent Years Signing Bank Deals to Change That Number. Here Is What Moved It Instead.",
-              "src": "24/7 Wall St.",
-              "url": "https://news.google.com/rss/articles/CBMijwJBVV95cUxQb2dkNVA2SFVYaUN0S0NJd3BzWVA3Ml9IR2RQc2pIeVBzSGlKdmdiN2FZYmpJakk4THkyUTBOdE5vRGRXZXI5R2J2aFdMVXR2MzgzbFZSQlM5cDM5a1pOVjRwYVNQRjBvRFEwYlVoR2d5akNIWkdMOTEzbHhxZ1VYOUtGZU0teFVRMExhYzRkaUtNQS1Gc185cUJxeUd2clpZcFEwVnpESmlURzV3TmthcFdZSldlTndqNldqSEktMFJuZVh2aEYyM2FvX0I3emhfRDRkRE1MS01nMlM4b3loNzVDWEt6MGFXNGU0cWZVekxzbnktTlhvektBak85SGNqc1J0aFdGVU8taU5TZ2w0?oc=5",
-              "age_h": 7.5
+              "age_h": 12.1
             }
           ]
         },
         {
           "key": "ai",
           "label": "IA / tech",
-          "score": 16.1,
+          "score": 12.9,
           "tone_24h": null,
           "tone_7d": null,
           "vol_ratio": null,
           "lex": 0.0,
-          "ai": 25,
+          "ai": 20,
           "headlines": [
             {
-              "t": "NVIDIA's Huang Says \"No Laws or Regulations Needed\" — Industry Split Over AI Development Slowdown Debate",
+              "t": "Brad Smith: UK Best Placed to Lead AI Safety Rules",
+              "src": "Technology Org",
+              "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNNVktVTdKSGpuN0Z2MURqbEZweVFJbGdlWmxWQklRT0J4dnZHck0xQ1VYRnQ3UUE1VWJfU3VOZGgzQ0RNUF9CWEdUU1lEb3hISlVfenBnTExtR1RLUnFYQks5UHBWOVlLNnk2dmdHVmxvQkxiei0wU19lc0MtaC1KMDFNbFR5Mi1YWVNfVk5NU0s5Ylk?oc=5",
+              "age_h": 1.6
+            },
+            {
+              "t": "First UK lender goes live on a sovereign AI platform",
+              "src": "Financial Reporter",
+              "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQQ3RNRUZoV092V3JVbUljY2wxRXFvR3A1QW12WXE2NVdSMzBvTUE1RmJyaV93VlMzLTBISDR6am9rNXprSUk0dTI1NnR1NkJuSl92Um45ZXZCYkxHeXpfNmlpM2M1NVVGZjVUaGRDOENvREtzXzY0bVpSTVZSOGtQSlMyT1JjYXpIZEVhQ1BPWm5EVWI4alJieg?oc=5",
+              "age_h": 1.8
+            },
+            {
+              "t": "Does ChatGPT Watermark Text? Claude, Gemini and Copilot Compared",
+              "src": "Pasquale Pillitteri",
+              "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQR0g3YllXeGNtQTdnMmRnTGZteUVMb2o2LXJsVlpNOHFGRWNabDR0bnZud01MWXBPcGxBVllRSGtuV1I1TGdIZkFhSmRSSDlaNEFNcG03M3pocEd5VHljU3RSS1Rna0lWeWxxN0hqRi1jekFHM0RZOFA0UXc1TFprMmRaZmlKZS00MWJJ?oc=5",
+              "age_h": 1.9
+            },
+            {
+              "t": "Anthropic Unveils AI Worms Study With 26B Model on 15 Android TV Boxes",
+              "src": "Pasquale Pillitteri",
+              "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxQT1FZWkVZcVpYdzVETk4wVGNWckx6b0g4UVlrVk94WGlzeTVFTUl3NE0zaUtYaDNXS0ZIa2ZFUDh2WE9sRm5vTU13X0xCeENXM2NycEMxR0YzdWJFdDd0YTRXOTdtczFMVTc3TEFUMTA0cnRnOTI0eXJwel9lY0pxQm9VNUdNeUxReEJmZkluZw?oc=5",
+              "age_h": 2.7
+            },
+            {
+              "t": "Nvidia's China AI Chip Share Slips to 34% as Huawei Closes In",
               "src": "BigGo Finance",
-              "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE80OXRwRHRqMGpiMzd1emNudG5hN0hEcnpudWFvekFMbnp5OXluY0NNQ2wyMGRGU0xRM1JSOEg4R2Y0V1NoTjItS21xZVlJb1FMSThXY2dtaW1VSkpNd1NHMHpJR1RPWnNzSXZXZGlrcDFHT1JFcHc?oc=5",
-              "age_h": 0.6
+              "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9VWmJZVjAyRDBBaUxkWmZpZlhoN3RHMG1lR2dDLUNQZmhfemhlbGhjdUp2UVFTRGplRjB5dU01SFpvQUhFLXQ1VUpIWTRmdWlhbnZiZGo4aWFTdEZhNHFUZjBjbklrWUdOV09IcVlJMmtLMk5JbXc?oc=5",
+              "age_h": 4.0
             },
             {
-              "t": "Microsoft President Says AI Has Fewer Regulations Than Milk. So Now What?",
-              "src": "CNET",
-              "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQcVJhV3RJZ3FZOS12eTc4OEl2eEtrT1gxY1BjLVBGTllZclBnQ21ZSkFSU3YzbDRfRmoyb19rbllEYWFNZVNBUEpvNHlWRXhGOERpZjA3S0dYNUU4ajdLd3hWaEtnczd3bE1iNHhJSFY5YzMwalp3UElkemtwTW9xdm1GcHlWS0xTdXhYN2VvVHlKUl9NZk5Ba1h0ZU9FYmtlZ1RmZGxR?oc=5",
-              "age_h": 2.9
-            },
-            {
-              "t": "Microsoft’s Brad Smith says AI faces fewer rules than milk",
-              "src": "News Ghana",
-              "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPVjUwS3BFYjhkVU5yY2EyYVctQThJckphc0QxbDlVLW5sbHg0N2JnWjFnbG5oZTIzdEJFNHZJcHlUenhQVmhsWXR0SjFPb3RDdHNKWHNCMVk5a2NmbngwdHQzWk9fYWg4WEtKRzNBTWpLU3FLN1JteFhDeHVaRURwdTdxZERjMDkxVWpV?oc=5",
-              "age_h": 3.2
-            },
-            {
-              "t": "Anthropic ran a 26 billion parameter AI model on 15 cheap TV boxes",
-              "src": "Startup Fortune",
-              "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQOFQzTmJjd01ZczVCX1hsODhvNktDT3hNQnlwV1phRF8wS00zWEdKcEtVa2s3VFhlZV9YcTlxMXdQZzBxY0Y2SGd0Ql9Jb3Z4Q0k2RzdZUk93MG5rRzNFQlhNRTBnMGhoYTgzTC1HM0EtbnRYQW5tTVduRktOWEZ2U3ZPb1J3cF83OUxxMUZCM3JjdUwyZHJIU3BR?oc=5",
-              "age_h": 3.4
-            },
-            {
-              "t": "Nvidia, AMD shares fall as OpenAI revenue report rattles AI investors",
-              "src": "Crypto Briefing",
-              "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTFBaendHVzY2a1FDaEUtV0dTQ2hrMWFoaG4tV1NpOHdySGpyaE9oSF9ZX3dYM3FXRlRKbHlVSnAxSTQxaTVlQXpoZzVDYkxEa3haR1I5M1JxUHpQdWozSzNGVndTV2dlSFl6NWFFeFNISFVTMWc?oc=5",
-              "age_h": 4.3
-            },
-            {
-              "t": "Navitas teams up with Nvidia to rewire power delivery for AI data centers",
-              "src": "Crypto Briefing",
-              "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTFBONkgwaUsxUFJhLVdHTmpLMWpJeTBqM29ZbzVqVHR2UEtVd3p2OTVuTXlkY1VPUUtWYzJhWWxlMDdLVy1rSEhWZzQ1R0NfZi1LVUpIdkltN1JfVFF3cU5CRnVnbVNjQU5xbk9pdHJyQ0huVWpfZmRNR0RB?oc=5",
-              "age_h": 5.0
+              "t": "The AI Trade Is Crowded: Where Retail Money Can Go beyond Nvidia",
+              "src": "Finance Magnates",
+              "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNWUpEUlRNQVdrYnJva1lObGF2aloxWFZzdUZWWVcxOGIzanQ0M1BOcVpnTVVIbzFmOU1uRW8wOHdLZnRURXppcENHNnFCOUZ2N241dTl5TWs2MUZMM2NPX3NDaWVYUmNDRlBGcWN5ZjI2Ui1HUlUxMWZMck5Ia3d4ZmVLREpYcHlnb09UVmRVRzR0WjN2ZVVpSzE2TG8td2RKajlYdA?oc=5",
+              "age_h": 4.4
             }
           ]
         },
         {
           "key": "markets",
           "label": "Marchés / récession",
-          "score": 21.3,
+          "score": 37.6,
           "tone_24h": null,
           "tone_7d": null,
           "vol_ratio": null,
-          "lex": 5.6,
+          "lex": 51.2,
           "ai": 30,
           "headlines": [
             {
-              "t": "Morgan Stanley cuts target for Minsheng Bank stock to HKD 4.70",
+              "t": "RBC kept EUR 36 target for Deutsche Bank stock",
               "src": "ad-hoc-news.de",
-              "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPUWVtbFdFRHJGdUl3ak5QdnVST25hdlVUQ29KbWxYU3Nfa1Q0UWtrODVFeVBraU44bHBSSk5KQVliM3JIelpFLWp0U002T2JuYjJGZ3ZZYlNLU2dlcjZRTU1BUmRtVVhBM1dKS2J5cTdnNVJWX1pWZlVMVHoxVG5qT2haQmIxQU9FWkJMSVpiU3dEYU9aNC0ya1NiMUFXU3RaelJ5YmdOc01fUWp2dWRFZ1B0X3lrNjRJVHpOSVZR?oc=5",
-              "age_h": 0.7
+              "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNNDZfdWNua0pmWFliWmI2cFN1Yy1HUmJUSVl3UGpYYVZFZkZhTVVVWE5FbVVocWFIZ2FyNHBTbERnQUNyYmVVaXlFYnpZbW9GaVZ5YzJabzVUY0o3eE1UU1Y4T3BLeHg4bEpTeG9MX3dzcldBelNxVFh1T1NrRXNTS2hhUXowTTVndnQwbk9UT2dWUHd0UXVaLW01RGZValdsb2tNVTBaWWVDWi1ZMEE?oc=5",
+              "age_h": 0.4
             },
             {
-              "t": "Banco Bradesco Executive Purchases $1 Million BBD Shares. Is This a Sign the Brazilian Bank is a Buy in 2026?",
-              "src": "The Motley Fool",
-              "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxNRE4wRUNheFVpMnR1QzZzRzNDUWJ6OHAtREtvekxnTlc0aWN6NU9HVnlTd3B6T2l5SmJ5amYzYWo2Zzc1MklDQm80ejJrcFNqQTl2Q1oxTzFMLU5BUllOa3BPWV9nV0NWSkRPc3EwZFZFUkVrOGNJLUhybjYxTHFPck9xQ2tzYzJuZmFOQ0h3N0xuT2FndHVuMm84X0MtSjZpN0FqN0czMEp6c0VtdVYxb3UtemVBcEpWTGdqOFhlQlRaTkl1UlFjekszTnA5c2lhU0hoSEJFLVZGN0FWR0pGOG02X2J5SXlUWGhvLXpVQ0U?oc=5",
-              "age_h": 1.6
+              "t": "Global X Australian Bank Credit ETF (ASX:BANK): 137 Bank Bonds and Hybrids From the Four Major Banks",
+              "src": "Kalkine",
+              "url": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxNZHEtZHNSTmdvdGd0bHpIa2FUdi1rbWdwNWQtTjV4TnZEcWpPcnRRSW15d0RBUjdsT2E5LTZ4YmNDMWowTGl4dlNVZG9abFBIMC1oQUJSNEJieU82aGdBNEQ0ZU9lUVBRMHYyLW9HY1JUNzVlQUJGTVRUWmdycE5rMGRLcUNFVzJWSi0wLVFuZUtSRmVjN3FsR1B0bGhUSWVWRWo0N05YZ1YtdVN4bXE0YmthdDdldVJ4ZUt4ZzRLR29IVjFITVk4VkhDdjVUSkVLdWpmb2RpR041NzNQbGJF?oc=5",
+              "age_h": 0.4
             },
             {
-              "t": "Banco Bradesco Director Purchases $843,000 Shares. Is Brazil's Banking System Rebounding to Make BBD a Buy?",
-              "src": "The Motley Fool",
-              "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxNTGhuRVpKclA5bklIMkJlUUdsYVVyeW0xeW5mYkRtMkdPMXdHS3IwQ1BkRkR2LXh0TW9YQmVSWmpvdU5MUUx1WWdXOVBpRkZ2TDdSandWUm9kRVloZTNLY0FZaEx6Tm9EaEREemszeXd3ek5HMURmTl9KS1ZYNVFQTFl3dzNvaUZEWEEyOUlrOG9fdVdfTU5ESUZXVHpNa3l4YlRoSnpJNUM5QnVnc0UtSHllem82dlV0QkZpejlvQTVGbWNpQ2plTTlPUkhJYmlORFNMMmRVNDVCYlhQR0NnQ1lDREl5YnhlMVNUM09B?oc=5",
-              "age_h": 3.6
+              "t": "China CITIC Bank planned CNY 35 billion redemption and Buy rating for China CITIC Bank stock",
+              "src": "ad-hoc-news.de",
+              "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxPSE9pdnFKaWx0MWt4TTZTSHlNbFhsZ0Z1SGlEZlVKbEJUak93Q2lKQTZ1T2dIZEFVUFhqcm1kYlpBUmtHM1hPVDUzMUwtNGZyMk1idk11M1ZDZ3htX3dIM1J3aXFoN3B0TXd1MHNrdjZHb0pkcGRyWmtOOEYza08zSnZMQi0tVFUyQ1p2eFFob2xqNV9PUmE5OGtQZmdQRFN5dE5HVEg1QU1xTk02bnRMVzJLdFJvMnk0UDJCSjNBb3BnMG1IWjZwTjhyZjE?oc=5",
+              "age_h": 0.8
             },
             {
-              "t": "Banco Bradesco Executive Purchases $5.6 Million in Preference Shares. Are the Brazilian Bank's Common Shares a Buy?",
-              "src": "The Motley Fool",
-              "url": "https://news.google.com/rss/articles/CBMi-AFBVV95cUxObEUyMURad3ZKUDNEWEdWUlhBQ2Y0eEpZVEZrdlJJUlNVZTVPWTBLVktXc3N6ODQ2UnRDd2FaTjkxWmJjcC0xdTVaV1NUVEppS0w5RXBRazRNVGpjVlQ5aG9nLU5GbUFiV1o5WUl4TF9ScVA2YXRfekw5dVFoMzZjc2FMRzNOSXRMSUZjOEpHWk1fUTNMM0tHeGY2ajU4cFVfTGxoOFZjN3ItS2l5X01KaVZqbFpuNDNzX0c5eUxVQ2Z0RlpXdTdoOEFiY01lb2ZVV285WFJWUlJoZGl3cXc3OUxDWG5JVUtHSldDMEtQdW42Z0Z0c2pSZQ?oc=5",
-              "age_h": 4.6
+              "t": "Court approves class action involving Bank Leumi stock",
+              "src": "ad-hoc-news.de",
+              "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQZl94YkozVWdwSFZYSmRqQ216bHhFNmtMZG9LQnQwN1dRWE1oNU1KYXVRMXBobFdfUWQybGJfWVVfN1N1aFVQU200OTFjVGRTV3dOb2ZqdURjc3RadU1hNXBTUENWMXFPMm51RGUwRF9KcHY0OHRQWmp1MlNQcm9EcXZ0cDRIVy10aEFRNGVySHRFaS1kMEw1Q1BCREZIQV9CSlEzeDliYldydFlyUkxpalY4bmpFMHRO?oc=5",
+              "age_h": 1.0
             },
             {
-              "t": "Form 4 Nuveen Municipal Credit Opportunities Fund: JPMorgan Chase Bank, N.A. (10% Owner) For: 1 October",
-              "src": "Investing.com Canada",
-              "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxQMTE1V0F0eE03MGNJSXJ1eFhzcjlTVzZxNFBEOTRrYlpVTWI0dnNVV3IwaDFBNFBXU3BlUXBTS2ZWNlh4TjZRTEJfSGV6N0RKdWp5dzRTT0ZrRl9VeXcxOElNT3JodGtOOHJoQjBqVGtjdURRbGkzZDZJWEh1OHBybVhTVUZFN0RHTk8wbnRIWk9mRHloVzBBZU9FNmFhMksxSFlZc0s3WGViS3BfYkVROTJTX3B4NGpDQzB4NUxfT0c0RFNnNE9JMHNMaG1aUkI5U1hvRndsZFBfMExzWHM4MHZzRUU5dlhuVXdyYQ?oc=5",
-              "age_h": 5.1
+              "t": "S&P upgrades ratings for Shanghai Pudong Development Bank stock",
+              "src": "ad-hoc-news.de",
+              "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNSzdLRFkzRWV3Rm1ZWl9OWGw0WWYyZThjTTVqa1ZaYTR3bFpHOElBWDFYSzZERVdieU5IUEw1anBoUUdmMkNBNTYySXZRSmVxcm42V2lTelQyLVZKYkJGUnMtVnp1SmZyQnhjazUwZ3hSNHRDY3NQanFObThVRXl2VGJqQ2NKOW0tQkpBMm82MWZGV3ZlMk5RQ0dvQ0toRnhwS2dGcjNfYzdodVM3ZDZzOGNvNXRmNlFuZ282LUZ6UHI4YVVfQ2puU2d3?oc=5",
+              "age_h": 1.4
             },
             {
-              "t": "Is Bank of America's Stock a Buy Ahead of Its Q3 Earnings Report on Oct. 14?",
-              "src": "The Motley Fool",
-              "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOTkxJR1FJVUtiSVVoUmJpZzVxRkFPUlhFQ011M3hCY1NYY3ZPTUZ1SlNVSWdRU0VjNmp4eWlTYjJOMEZobGZUMUNOSUU5dE53TlBVQjU3T0x5ZS04QUZKWndFYnRoSHBWb2pEbEV2d2NSNU1aWUgwbmlDclBEa1lhZ1NHeV9feVFSVWZHOGNIeG9RZ1ZKeHN6eXpXcmplcUhwdmJJeC1mSXVvcG1wS0p4dmtBTGlMd0lD?oc=5",
-              "age_h": 5.5
+              "t": "1 Bank Stock on Our Buy List and 2 We Find Risky",
+              "src": "StockStory",
+              "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQbGhvMHh4UGZvZVBZM3dXd1BCZlZnMzBwcUdvbXJfSXRHVWFTZjR4XzlIWTY3dHluVU5vRVlsNHFGWmZXSmZubndYOV9tSVI1TGJnaFlNUmxzWm1PaXd2UDFUUlNRYWgtb2xUcGZERHdZajdQaV9GMENFR3lmMUVJT1FsRXoyanBBTTZkbXhpZ1ZXby1tbDBYTFVUaGNpR1dFdHhBTTRkOUd0ZXEz?oc=5",
+              "age_h": 1.5
             }
           ]
         }
@@ -2329,7 +2327,8 @@
           1.25,
           1.125,
           0.875,
-          0.625
+          0.625,
+          1.0
         ],
         "russia": [
           3.375,
@@ -2477,7 +2476,8 @@
           2.25,
           1.5,
           1.875,
-          1.875
+          1.875,
+          3.625
         ],
         "china": [
           1.75,
@@ -2625,7 +2625,8 @@
           0.5,
           0.0,
           0.625,
-          1.0
+          1.0,
+          1.75
         ],
         "mideast": [
           1.625,
@@ -2773,7 +2774,8 @@
           1.375,
           0.875,
           1.75,
-          0.375
+          0.375,
+          1.25
         ],
         "fed": [
           0.5,
@@ -2893,6 +2895,7 @@
           0.0,
           0.0,
           0.0,
+          1.333,
           1.333,
           1.333
         ],
@@ -3042,7 +3045,8 @@
           0.25,
           0.0,
           0.125,
-          0.375
+          0.375,
+          0.5
         ],
         "ai": [
           0.75,
@@ -3190,7 +3194,8 @@
           0.0,
           0.5,
           0.375,
-          0.375
+          0.375,
+          0.0
         ],
         "markets": [
           0.75,
@@ -3338,20 +3343,21 @@
           1.25,
           1.75,
           1.625,
-          1.125
+          1.125,
+          2.25
         ]
       }
     }
   },
   "prices": {
-    "xrp": 1.35164,
-    "btc": 82336.0
+    "xrp": 1.36598,
+    "btc": 83426.6
   },
   "buy_zone": {
     "high": 1.12,
     "low": 0.9,
-    "dist_to_high_pct": -17.1,
-    "dist_to_low_pct": -33.4,
+    "dist_to_high_pct": -18.0,
+    "dist_to_low_pct": -34.1,
     "in_zone": false
   },
   "sources": {
@@ -3361,7 +3367,7 @@
     "oi": "okx",
     "long_short": "okx",
     "liquidations": "okx",
-    "dvol": "deribit",
+    "dvol": null,
     "vix": "yahoo",
     "stablecoins": "defillama",
     "dominance": "coingecko",
@@ -3806,20 +3812,20 @@
     },
     {
       "d": "2026-10-13",
-      "s": 24.6,
-      "p": 1.35164,
+      "s": 24.2,
+      "p": 1.36598,
       "c": {
-        "trend": 27.2,
-        "momentum": 18.7,
-        "leverage": 56.2,
-        "volatility": 0.7,
-        "liquidity": 24.4,
+        "trend": 25.0,
+        "momentum": 16.8,
+        "leverage": 51.0,
+        "volatility": 1.2,
+        "liquidity": 25.4,
         "sentiment": 18.0,
         "events": 0.0,
-        "news": 30.5
+        "news": 40.2
       }
     }
   ],
-  "delta_prev_run": 0.5,
-  "delta_24h": 0.5
+  "delta_prev_run": -0.4,
+  "delta_24h": 0.1
 }
